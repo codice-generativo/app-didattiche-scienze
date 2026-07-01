@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz Interattivo - Le Molecole della Vita</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121933;
+      --panel-2: #172144;
+      --text: #f7f8fc;
+      --muted: #b8c1e0;
+      --accent: #7cf0c9;
+      --accent-2: #ffd166;
+      --danger: #ff6b6b;
+      --success: #7cf0c9;
+      --border: #2c3767;
+      --shadow: 0 10px 30px rgba(0,0,0,.28);
+      --radius: 18px;
+      --font: Inter, Atkinson Hyperlegible, Arial, Helvetica, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; min-height: 100%; }
+    body {
+      font-family: var(--font);
+      background:
+        radial-gradient(circle at top right, rgba(124,240,201,.12), transparent 18%),
+        radial-gradient(circle at top left, rgba(255,209,102,.08), transparent 20%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .app {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .hero, .card, .footer-note {
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 24px;
+      margin-bottom: 20px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: start;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--accent);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      width: fit-content;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      max-width: 70ch;
+      font-size: 1.02rem;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .control-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    select, button {
+      font: inherit;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      min-height: 48px;
+      padding: 10px 16px;
+    }
+
+    select {
+      background: var(--panel);
+      color: var(--text);
+    }
+
+    button {
+      background: var(--panel-2);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+    }
+    button:hover { transform: translateY(-1px); border-color: var(--accent); }
+    button:focus-visible, .option:focus-visible, select:focus-visible {
+      outline: 3px solid var(--accent-2);
+      outline-offset: 2px;
+    }
+
+    .primary { background: #1f8f6d; border-color: #29ae85; }
+    .secondary { background: #28345f; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(120px, 1fr));
+      gap: 12px;
+    }
+
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: .92rem;
+    }
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-top: 4px;
+    }
+
+    .card {
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+
+    .question-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .question-index {
+      color: var(--accent-2);
+      font-weight: 800;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+      font-size: .92rem;
+    }
+
+    .question-text {
+      font-size: clamp(1.2rem, 2.2vw, 1.7rem);
+      font-weight: 800;
+      margin: 10px 0 18px;
+    }
+
+    .tts-controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .options {
+      display: grid;
+      gap: 12px;
+    }
+
+    .option {
+      width: 100%;
+      text-align: left;
+      padding: 16px 18px;
+      background: #1a2347;
+      border: 2px solid #324078;
+      border-radius: 16px;
+      color: var(--text);
+      font-size: 1rem;
+      min-height: 58px;
+    }
+
+    .option.correct { background: rgba(124,240,201,.13); border-color: var(--success); }
+    .option.wrong { background: rgba(255,107,107,.12); border-color: var(--danger); }
+    .option:disabled { cursor: not-allowed; opacity: 1; }
+
+    .feedback {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      font-weight: 600;
+      display: none;
+    }
+    .feedback.show { display: block; }
+    .feedback.success { border-color: var(--success); }
+    .feedback.error { border-color: var(--danger); }
+
+    .actions {
+      margin-top: 18px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .footer-note {
+      padding: 18px;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    .hidden { display: none !important; }
+
+    .result-title {
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      margin-top: 0;
+    }
+
+    .score-ring {
+      width: 132px;
+      height: 132px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: conic-gradient(var(--accent) calc(var(--score) * 1%), #253058 0);
+      margin-bottom: 14px;
+    }
+    .score-ring > div {
+      width: 98px;
+      height: 98px;
+      border-radius: 50%;
+      background: var(--bg);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 1.2rem;
+    }
+
+    [dir="rtl"] .question-text,
+    [dir="rtl"] .option,
+    [dir="rtl"] .subtitle,
+    [dir="rtl"] .feedback,
+    [dir="rtl"] .footer-note { text-align: right; }
+
+    @media (max-width: 720px) {
+      .app { padding: 14px; }
+      .hero, .card { padding: 18px; }
+      .stats { grid-template-columns: 1fr; }
+      .question-head { align-items: flex-start; }
+      .toolbar { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" id="appRoot">
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <div class="badge" id="lessonBadge">Biologia • Capitolo 2</div>
+          <h1 id="appTitle">Quiz interattivo: le molecole della vita</h1>
+          <p class="subtitle" id="appSubtitle">10 domande su biomolecole, carboidrati, lipidi, proteine, acidi nucleici e ATP. Interfaccia ad alto contrasto, lettura vocale nativa e supporto multilingue.</p>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="control-group">
+          <label for="languageSelect" id="languageLabel">Lingua</label>
+          <select id="languageSelect" aria-label="Seleziona lingua">
+            <option value="it">Italiano</option>
+            <option value="es">Español</option>
+            <option value="ar">العربية</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <button class="primary" id="startBtn">Inizia il quiz</button>
+          <button class="secondary hidden" id="restartBtn">Ricomincia</button>
+        </div>
+      </div>
+
+      <div class="stats" aria-label="Statistiche del quiz">
+        <div class="stat">
+          <div class="stat-label" id="scoreLabel">Punteggio</div>
+          <div class="stat-value"><span id="scoreValue">0</span>/10</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label" id="questionLabel">Domanda</div>
+          <div class="stat-value" id="questionValue">0/10</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label" id="statusLabel">Stato</div>
+          <div class="stat-value" id="statusValue">Pronto</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card hidden" id="quizCard" aria-live="polite">
+      <div class="question-head">
+        <div class="question-index" id="questionIndex">Domanda 1</div>
+        <div class="tts-controls">
+          <button id="speakBtn">▶ Leggi</button>
+          <button id="stopBtn">■ Stop</button>
+        </div>
+      </div>
+      <div class="question-text" id="questionText"></div>
+      <div class="options" id="optionsContainer"></div>
+      <div class="feedback" id="feedbackBox"></div>
+      <div class="actions">
+        <button class="primary hidden" id="nextBtn">Prossima domanda</button>
+      </div>
+    </section>
+
+    <section class="card hidden" id="resultCard">
+      <div class="score-ring" id="scoreRing" style="--score:0">
+        <div><span id="finalScore">0/10</span></div>
+      </div>
+      <h2 class="result-title" id="resultTitle">Quiz completato</h2>
+      <p class="subtitle" id="resultText"></p>
+      <div class="actions">
+        <button class="primary" id="playAgainBtn">Gioca di nuovo</button>
+      </div>
+    </section>
+
+    <section class="footer-note" id="footerNote">
+      Contenuti costruiti sugli argomenti della lezione allegata: classi delle biomolecole, polimeri, carboidrati, lipidi, proteine, enzimi, DNA, RNA e ATP.
+    </section>
+  </main>
+
+  <script>
+    const translations = {
+      it: {
+        ui: {
+          badge: 'Biologia • Capitolo 2',
+          title: 'Quiz interattivo: le molecole della vita',
+          subtitle: '10 domande su biomolecole, carboidrati, lipidi, proteine, acidi nucleici e ATP. Interfaccia ad alto contrasto, lettura vocale nativa e supporto multilingue.',
+          language: 'Lingua',
+          start: 'Inizia il quiz',
+          restart: 'Ricomincia',
+          score: 'Punteggio',
+          question: 'Domanda',
+          status: 'Stato',
+          ready: 'Pronto',
+          inProgress: 'In corso',
+          completed: 'Completato',
+          speak: '▶ Leggi',
+          stop: '■ Stop',
+          next: 'Prossima domanda',
+          correct: 'Corretto. Ottimo lavoro.',
+          wrong: 'Risposta non corretta.',
+          completedTitle: 'Quiz completato',
+          playAgain: 'Gioca di nuovo',
+          footer: 'Contenuti costruiti sugli argomenti della lezione allegata: classi delle biomolecole, polimeri, carboidrati, lipidi, proteine, enzimi, DNA, RNA e ATP.',
+          questionN: n => `Domanda ${n}`,
+          questionProgress: (n, total) => `${n}/${total}`,
+          finalText: (score, total) => `Hai ottenuto ${score} risposte corrette su ${total}.`
+        },
+        voiceLang: 'it-IT',
+        dir: 'ltr',
+        questions: [
+          { q: 'Quale caratteristica descrive meglio le biomolecole?', options: ['Sono composti organici con scheletri carboniosi e gruppi funzionali.', 'Sono solo sostanze inorganiche presenti nell’acqua.', 'Sono sempre formate da un solo atomo di carbonio.', 'Sono molecole prive di proprietà chimiche specifiche.'], answer: 0, explain: 'Le biomolecole sono composti organici con catene di carbonio e gruppi funzionali che determinano le proprietà chimiche.' },
+          { q: 'Come si formano i polimeri biologici?', options: ['Con reazioni di condensazione che eliminano acqua.', 'Con reazioni di idrolisi che producono glucosio.', 'Con la sola aggiunta di ossigeno.', 'Per evaporazione dell’acqua dal citoplasma.'], answer: 0, explain: 'La condensazione unisce monomeri ed elimina una molecola d’acqua.' },
+          { q: 'Qual è una funzione importante dei carboidrati?', options: ['Fornire energia e contribuire alla costruzione di strutture cellulari.', 'Trasportare ossigeno nel sangue.', 'Costruire direttamente il DNA.', 'Denaturare le proteine.'], answer: 0, explain: 'I carboidrati sono una fonte energetica e partecipano anche alla costruzione di altre biomolecole o strutture.' },
+          { q: 'Quale coppia è costituita da zuccheri semplici usati come fonte di energia?', options: ['Glucosio e fruttosio', 'Amido e cellulosa', 'Glicogeno e chitina', 'Colesterolo e testosterone'], answer: 0, explain: 'Glucosio e fruttosio sono monosaccaridi usati come fonte di energia.' },
+          { q: 'Quali sono i principali polisaccaridi di riserva?', options: ['Amido e glicogeno', 'Cellulosa e chitina', 'DNA e RNA', 'Fosfolipidi e steroidi'], answer: 0, explain: 'Amido e glicogeno sono i polisaccaridi di riserva più importanti.' },
+          { q: 'Che cosa descrive correttamente i fosfolipidi?', options: ['Hanno una testa idrofila e due code idrofobiche.', 'Sono formati da quattro anelli fusi insieme.', 'Sono monosaccaridi con formula CnH2nOn.', 'Sono proteine globulari con sito attivo.'], answer: 0, explain: 'I fosfolipidi hanno una testa polare con fosfato e due code idrofobiche.' },
+          { q: 'Quale affermazione sul colesterolo è corretta?', options: ['È una molecola presente nelle membrane delle cellule animali.', 'È il principale polisaccaride delle piante.', 'È un enzima che accelera le reazioni cellulari.', 'È formato da due filamenti appaiati.'], answer: 0, explain: 'Il colesterolo si trova nelle membrane delle cellule animali ed è precursore di steroidi.' },
+          { q: 'Da quanti tipi di amminoacidi derivano le proteine?', options: ['20', '4', '2', '100'], answer: 0, explain: 'Le proteine derivano dalla combinazione di 20 amminoacidi.' },
+          { q: 'Che cosa fanno gli enzimi nelle cellule?', options: ['Accelerano le reazioni chimiche agendo come catalizzatori.', 'Immagazzinano informazioni genetiche.', 'Formano il doppio strato della membrana.', 'Trasportano soltanto acqua.'], answer: 0, explain: 'Gli enzimi sono catalizzatori biologici e facilitano le reazioni chimiche.' },
+          { q: 'Quale affermazione su DNA, RNA e ATP è corretta?', options: ['Il DNA contiene informazioni per sintetizzare proteine, l’RNA porta le istruzioni ai ribosomi e l’ATP libera energia staccando un gruppo fosfato.', 'Il DNA usa uracile e l’RNA usa timina.', 'L’ATP è un polisaccaride di riserva.', 'RNA e ATP sono entrambi lipidi.'], answer: 0, explain: 'La sintesi proteica coinvolge DNA e RNA; l’ATP è il nucleotide energetico della cellula.' }
+        ]
+      },
+      es: {
+        ui: {
+          badge: 'Biología • Capítulo 2',
+          title: 'Cuestionario interactivo: las moléculas de la vida',
+          subtitle: '10 preguntas sobre biomoléculas, carbohidratos, lípidos, proteínas, ácidos nucleicos y ATP. Interfaz de alto contraste, lectura de voz nativa y soporte multilingüe.',
+          language: 'Idioma',
+          start: 'Comenzar el cuestionario',
+          restart: 'Reiniciar',
+          score: 'Puntuación',
+          question: 'Pregunta',
+          status: 'Estado',
+          ready: 'Listo',
+          inProgress: 'En curso',
+          completed: 'Completado',
+          speak: '▶ Leer',
+          stop: '■ Detener',
+          next: 'Siguiente pregunta',
+          correct: 'Correcto. Muy bien.',
+          wrong: 'Respuesta incorrecta.',
+          completedTitle: 'Cuestionario completado',
+          playAgain: 'Jugar de nuevo',
+          footer: 'Contenidos construidos a partir de los temas de la lección adjunta: clases de biomoléculas, polímeros, carbohidratos, lípidos, proteínas, enzimas, ADN, ARN y ATP.',
+          questionN: n => `Pregunta ${n}`,
+          questionProgress: (n, total) => `${n}/${total}`,
+          finalText: (score, total) => `Has obtenido ${score} respuestas correctas de ${total}.`
+        },
+        voiceLang: 'es-ES',
+        dir: 'ltr',
+        questions: [
+          { q: '¿Qué característica describe mejor a las biomoléculas?', options: ['Son compuestos orgánicos con esqueletos de carbono y grupos funcionales.', 'Son solo sustancias inorgánicas presentes en el agua.', 'Siempre están formadas por un único átomo de carbono.', 'Son moléculas sin propiedades químicas específicas.'], answer: 0, explain: 'Las biomoléculas son compuestos orgánicos con cadenas de carbono y grupos funcionales.' },
+          { q: '¿Cómo se forman los polímeros biológicos?', options: ['Mediante reacciones de condensación que eliminan agua.', 'Mediante hidrólisis que produce glucosa.', 'Solo añadiendo oxígeno.', 'Por evaporación del agua del citoplasma.'], answer: 0, explain: 'La condensación une monómeros y elimina una molécula de agua.' },
+          { q: '¿Cuál es una función importante de los carbohidratos?', options: ['Aportar energía y ayudar a construir estructuras celulares.', 'Transportar oxígeno en la sangre.', 'Construir directamente el ADN.', 'Desnaturalizar proteínas.'], answer: 0, explain: 'Los carbohidratos son fuente de energía y también participan en la construcción de estructuras.' },
+          { q: '¿Qué par está formado por azúcares simples usados como fuente de energía?', options: ['Glucosa y fructosa', 'Almidón y celulosa', 'Glucógeno y quitina', 'Colesterol y testosterona'], answer: 0, explain: 'La glucosa y la fructosa son monosacáridos.' },
+          { q: '¿Cuáles son los principales polisacáridos de reserva?', options: ['Almidón y glucógeno', 'Celulosa y quitina', 'ADN y ARN', 'Fosfolípidos y esteroides'], answer: 0, explain: 'El almidón y el glucógeno son polisacáridos de reserva.' },
+          { q: '¿Qué describe correctamente a los fosfolípidos?', options: ['Tienen una cabeza hidrófila y dos colas hidrófobas.', 'Están formados por cuatro anillos fusionados.', 'Son monosacáridos con fórmula CnH2nOn.', 'Son proteínas globulares con sitio activo.'], answer: 0, explain: 'Los fosfolípidos tienen una cabeza polar y dos colas apolares.' },
+          { q: '¿Qué afirmación sobre el colesterol es correcta?', options: ['Es una molécula presente en las membranas de las células animales.', 'Es el principal polisacárido de las plantas.', 'Es una enzima que acelera reacciones celulares.', 'Está formado por dos hebras apareadas.'], answer: 0, explain: 'El colesterol está en las membranas de las células animales y es precursor de esteroides.' },
+          { q: '¿De cuántos tipos de aminoácidos derivan las proteínas?', options: ['20', '4', '2', '100'], answer: 0, explain: 'Las proteínas derivan de la combinación de 20 aminoácidos.' },
+          { q: '¿Qué hacen las enzimas en las células?', options: ['Aceleran las reacciones químicas actuando como catalizadores.', 'Almacenan información genética.', 'Forman la bicapa de la membrana.', 'Transportan solamente agua.'], answer: 0, explain: 'Las enzimas son catalizadores biológicos.' },
+          { q: '¿Qué afirmación sobre ADN, ARN y ATP es correcta?', options: ['El ADN contiene la información para sintetizar proteínas, el ARN lleva las instrucciones a los ribosomas y el ATP libera energía al desprender un grupo fosfato.', 'El ADN usa uracilo y el ARN usa timina.', 'El ATP es un polisacárido de reserva.', 'El ARN y el ATP son lípidos.'], answer: 0, explain: 'El ADN y el ARN participan en la síntesis proteica; el ATP es el nucleótido energético.' }
+        ]
+      },
+      ar: {
+        ui: {
+          badge: 'الأحياء • الفصل 2',
+          title: 'اختبار تفاعلي: جزيئات الحياة',
+          subtitle: '10 أسئلة حول الجزيئات الحيوية والكربوهيدرات والدهون والبروتينات والأحماض النووية و ATP. واجهة عالية التباين مع قراءة صوتية أصلية ودعم متعدد اللغات.',
+          language: 'اللغة',
+          start: 'ابدأ الاختبار',
+          restart: 'إعادة البدء',
+          score: 'النتيجة',
+          question: 'السؤال',
+          status: 'الحالة',
+          ready: 'جاهز',
+          inProgress: 'قيد التقدم',
+          completed: 'مكتمل',
+          speak: '▶ تشغيل الصوت',
+          stop: '■ إيقاف',
+          next: 'السؤال التالي',
+          correct: 'إجابة صحيحة. عمل ممتاز.',
+          wrong: 'إجابة غير صحيحة.',
+          completedTitle: 'اكتمل الاختبار',
+          playAgain: 'العب مرة أخرى',
+          footer: 'تم بناء المحتوى اعتمادًا على موضوعات الدرس المرفق: فئات الجزيئات الحيوية، البوليمرات، الكربوهيدرات، الدهون، البروتينات، الإنزيمات، DNA و RNA و ATP.',
+          questionN: n => `السؤال ${n}`,
+          questionProgress: (n, total) => `${n}/${total}`,
+          finalText: (score, total) => `لقد حصلت على ${score} إجابات صحيحة من أصل ${total}.`
+        },
+        voiceLang: 'ar-SA',
+        dir: 'rtl',
+        questions: [
+          { q: 'ما الوصف الأدق للجزيئات الحيوية؟', options: ['هي مركبات عضوية لها هياكل كربونية ومجموعات وظيفية.', 'هي مواد غير عضوية توجد فقط في الماء.', 'تتكون دائمًا من ذرة كربون واحدة فقط.', 'هي جزيئات بلا خصائص كيميائية محددة.'], answer: 0, explain: 'الجزيئات الحيوية مركبات عضوية تحتوي على سلاسل كربونية ومجموعات وظيفية تحدد خصائصها.' },
+          { q: 'كيف تتكوّن البوليمرات الحيوية؟', options: ['بتفاعلات التكاثف التي تزيل جزيء ماء.', 'بتفاعلات التحلل المائي التي تنتج الجلوكوز.', 'بإضافة الأكسجين فقط.', 'بتبخر الماء من السيتوبلازم.'], answer: 0, explain: 'تفاعل التكاثف يربط المونومرات مع إزالة جزيء ماء.' },
+          { q: 'ما إحدى الوظائف المهمة للكربوهيدرات؟', options: ['توفير الطاقة والمساهمة في بناء تراكيب خلوية.', 'نقل الأكسجين في الدم.', 'بناء DNA مباشرة.', 'إحداث تمسخ للبروتينات.'], answer: 0, explain: 'الكربوهيدرات مصدر للطاقة وتشارك أيضًا في بناء تراكيب خلوية.' },
+          { q: 'أي زوج يتكوّن من سكريات بسيطة تُستخدم كمصدر للطاقة؟', options: ['الجلوكوز والفركتوز', 'النشا والسليلوز', 'الجليكوجين والكيتين', 'الكوليسترول والتستوستيرون'], answer: 0, explain: 'الجلوكوز والفركتوز من السكريات الأحادية.' },
+          { q: 'ما أهم عديدات السكاريد الادخارية؟', options: ['النشا والجليكوجين', 'السليلوز والكيتين', 'DNA و RNA', 'الفوسفوليبيدات والستيرويدات'], answer: 0, explain: 'النشا والجليكوجين هما أهم عديدات السكاريد الادخارية.' },
+          { q: 'ما الوصف الصحيح للفوسفوليبيدات؟', options: ['لها رأس محب للماء وذيلان كارهان للماء.', 'تتكون من أربع حلقات مندمجة.', 'هي سكريات أحادية صيغتها CnH2nOn.', 'هي بروتينات كروية ذات موقع نشط.'], answer: 0, explain: 'الفوسفوليبيدات لها رأس قطبي وذيلان غير قطبيين.' },
+          { q: 'أي عبارة عن الكوليسترول صحيحة؟', options: ['يوجد في أغشية الخلايا الحيوانية.', 'هو أهم عديد سكاريد في النباتات.', 'هو إنزيم يسرّع التفاعلات الخلوية.', 'يتكون من شريطين متقابلين.'], answer: 0, explain: 'الكوليسترول يوجد في أغشية الخلايا الحيوانية ويعد مقدمة لتكوين الستيرويدات.' },
+          { q: 'من كم نوع من الأحماض الأمينية تُشتق البروتينات؟', options: ['20', '4', '2', '100'], answer: 0, explain: 'البروتينات تنتج من دمج 20 حمضًا أمينيًا.' },
+          { q: 'ماذا تفعل الإنزيمات داخل الخلايا؟', options: ['تسرّع التفاعلات الكيميائية بوصفها محفزات.', 'تخزن المعلومات الوراثية.', 'تكوّن الطبقة الثنائية للغشاء.', 'تنقل الماء فقط.'], answer: 0, explain: 'الإنزيمات محفزات حيوية تسهّل التفاعلات الكيميائية.' },
+          { q: 'أي عبارة عن DNA و RNA و ATP صحيحة؟', options: ['يحمل DNA معلومات تصنيع البروتينات، وينقل RNA التعليمات إلى الريبوسومات، ويطلق ATP الطاقة عند انفصال مجموعة فوسفات.', 'يستخدم DNA اليوراسيل ويستخدم RNA الثايمين.', 'ATP عديد سكاريد ادخاري.', 'RNA و ATP من الدهون.'], answer: 0, explain: 'يشارك DNA و RNA في تصنيع البروتين، أما ATP فهو نوكليوتيد ناقل للطاقة.' }
+        ]
+      }
+    };
+
+    const state = {
+      lang: 'it',
+      current: -1,
+      score: 0,
+      answered: false,
+      voices: [],
+      currentUtterance: null
+    };
+
+    const els = {
+      root: document.getElementById('appRoot'),
+      badge: document.getElementById('lessonBadge'),
+      title: document.getElementById('appTitle'),
+      subtitle: document.getElementById('appSubtitle'),
+      languageLabel: document.getElementById('languageLabel'),
+      languageSelect: document.getElementById('languageSelect'),
+      startBtn: document.getElementById('startBtn'),
+      restartBtn: document.getElementById('restartBtn'),
+      scoreLabel: document.getElementById('scoreLabel'),
+      questionLabel: document.getElementById('questionLabel'),
+      statusLabel: document.getElementById('statusLabel'),
+      scoreValue: document.getElementById('scoreValue'),
+      questionValue: document.getElementById('questionValue'),
+      statusValue: document.getElementById('statusValue'),
+      quizCard: document.getElementById('quizCard'),
+      resultCard: document.getElementById('resultCard'),
+      questionIndex: document.getElementById('questionIndex'),
+      questionText: document.getElementById('questionText'),
+      optionsContainer: document.getElementById('optionsContainer'),
+      feedbackBox: document.getElementById('feedbackBox'),
+      nextBtn: document.getElementById('nextBtn'),
+      speakBtn: document.getElementById('speakBtn'),
+      stopBtn: document.getElementById('stopBtn'),
+      resultTitle: document.getElementById('resultTitle'),
+      resultText: document.getElementById('resultText'),
+      playAgainBtn: document.getElementById('playAgainBtn'),
+      finalScore: document.getElementById('finalScore'),
+      scoreRing: document.getElementById('scoreRing'),
+      footerNote: document.getElementById('footerNote')
+    };
+
+    function getPack() { return translations[state.lang]; }
+    function getQuestions() { return getPack().questions; }
+
+    function updateUIStrings() {
+      const pack = getPack();
+      document.documentElement.lang = state.lang;
+      document.documentElement.dir = pack.dir;
+      els.badge.textContent = pack.ui.badge;
+      els.title.textContent = pack.ui.title;
+      els.subtitle.textContent = pack.ui.subtitle;
+      els.languageLabel.textContent = pack.ui.language;
+      els.startBtn.textContent = pack.ui.start;
+      els.restartBtn.textContent = pack.ui.restart;
+      els.scoreLabel.textContent = pack.ui.score;
+      els.questionLabel.textContent = pack.ui.question;
+      els.statusLabel.textContent = pack.ui.status;
+      els.speakBtn.textContent = pack.ui.speak;
+      els.stopBtn.textContent = pack.ui.stop;
+      els.nextBtn.textContent = pack.ui.next;
+      els.resultTitle.textContent = pack.ui.completedTitle;
+      els.playAgainBtn.textContent = pack.ui.playAgain;
+      els.footerNote.textContent = pack.ui.footer;
+      els.statusValue.textContent = state.current < 0 ? pack.ui.ready : (state.current >= getQuestions().length ? pack.ui.completed : pack.ui.inProgress);
+      renderStats();
+      if (state.current >= 0 && state.current < getQuestions().length) renderQuestion();
+      if (state.current >= getQuestions().length) renderResult();
+    }
+
+    function renderStats() {
+      const pack = getPack();
+      const total = getQuestions().length;
+      els.scoreValue.textContent = state.score;
+      const progress = state.current < 0 ? 0 : Math.min(state.current + 1, total);
+      els.questionValue.textContent = pack.ui.questionProgress(progress, total);
+    }
+
+    function startQuiz() {
+      stopSpeech();
+      state.current = 0;
+      state.score = 0;
+      state.answered = false;
+      els.quizCard.classList.remove('hidden');
+      els.resultCard.classList.add('hidden');
+      els.restartBtn.classList.remove('hidden');
+      els.statusValue.textContent = getPack().ui.inProgress;
+      renderStats();
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      const pack = getPack();
+      const total = getQuestions().length;
+      const q = getQuestions()[state.current];
+      if (!q) return;
+      els.questionIndex.textContent = pack.ui.questionN(state.current + 1);
+      els.questionText.textContent = q.q;
+      els.optionsContainer.innerHTML = '';
+      els.feedbackBox.className = 'feedback';
+      els.feedbackBox.textContent = '';
+      els.nextBtn.classList.add('hidden');
+      state.answered = false;
+
+      q.options.forEach((option, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'option';
+        btn.type = 'button';
+        btn.textContent = option;
+        btn.setAttribute('aria-label', option);
+        btn.addEventListener('click', () => handleAnswer(index, btn));
+        els.optionsContainer.appendChild(btn);
+      });
+      renderStats();
+    }
+
+    function handleAnswer(selectedIndex, selectedBtn) {
+      if (state.answered) return;
+      state.answered = true;
+      stopSpeech();
+      const pack = getPack();
+      const q = getQuestions()[state.current];
+      const optionButtons = [...document.querySelectorAll('.option')];
+      const correctBtn = optionButtons[q.answer];
+      optionButtons.forEach(btn => btn.disabled = true);
+
+      const isCorrect = selectedIndex === q.answer;
+      if (isCorrect) {
+        state.score += 1;
+        selectedBtn.classList.add('correct');
+        playBell();
+        els.feedbackBox.textContent = `${pack.ui.correct} ${q.explain}`;
+        els.feedbackBox.classList.add('show', 'success');
+      } else {
+        selectedBtn.classList.add('wrong');
+        if (correctBtn) correctBtn.classList.add('correct');
+        els.feedbackBox.textContent = `${pack.ui.wrong} ${q.explain}`;
+        els.feedbackBox.classList.add('show', 'error');
+      }
+
+      renderStats();
+      els.nextBtn.classList.remove('hidden');
+    }
+
+    function nextQuestion() {
+      state.current += 1;
+      if (state.current >= getQuestions().length) {
+        showResults();
+        return;
+      }
+      renderQuestion();
+    }
+
+    function showResults() {
+      stopSpeech();
+      const pack = getPack();
+      const total = getQuestions().length;
+      els.quizCard.classList.add('hidden');
+      els.resultCard.classList.remove('hidden');
+      els.statusValue.textContent = pack.ui.completed;
+      renderResult();
+      renderStats();
+    }
+
+    function renderResult() {
+      const pack = getPack();
+      const total = getQuestions().length;
+      const pct = Math.round((state.score / total) * 100);
+      els.finalScore.textContent = `${state.score}/${total}`;
+      els.resultTitle.textContent = pack.ui.completedTitle;
+      els.resultText.textContent = `${pack.ui.finalText(state.score, total)} ${performanceMessage(pct)}`;
+      els.scoreRing.style.setProperty('--score', pct);
+    }
+
+    function performanceMessage(pct) {
+      if (state.lang === 'it') {
+        if (pct === 100) return 'Prestazione eccellente.';
+        if (pct >= 70) return 'Conoscenza solida dei contenuti.';
+        if (pct >= 50) return 'Base buona, ma conviene ripassare alcuni concetti.';
+        return 'È utile rileggere la lezione e riprovare.';
+      }
+      if (state.lang === 'es') {
+        if (pct === 100) return 'Rendimiento excelente.';
+        if (pct >= 70) return 'Conocimiento sólido de los contenidos.';
+        if (pct >= 50) return 'Base buena, pero conviene repasar algunos conceptos.';
+        return 'Es útil releer la lección e intentarlo de nuevo.';
+      }
+      if (pct === 100) return 'أداء ممتاز.';
+      if (pct >= 70) return 'لديك فهم قوي للمحتوى.';
+      if (pct >= 50) return 'الأساس جيد، لكن يفضّل مراجعة بعض المفاهيم.';
+      return 'من الأفضل إعادة قراءة الدرس ثم المحاولة مرة أخرى.';
+    }
+
+    function initVoices() {
+      if (!('speechSynthesis' in window)) return;
+      state.voices = window.speechSynthesis.getVoices();
+    }
+
+    function chooseVoice(langCode) {
+      if (!state.voices.length) initVoices();
+      const normalized = langCode.toLowerCase();
+      return state.voices.find(v => v.lang && v.lang.toLowerCase().startsWith(normalized.split('-')[0])) || state.voices[0] || null;
+    }
+
+    function speakQuestion() {
+      const q = getQuestions()[state.current];
+      if (!q || !('speechSynthesis' in window)) return;
+      stopSpeech();
+      const utterance = new SpeechSynthesisUtterance(q.q);
+      utterance.lang = getPack().voiceLang;
+      utterance.rate = 0.95;
+      utterance.pitch = 1;
+      const voice = chooseVoice(getPack().voiceLang);
+      if (voice) utterance.voice = voice;
+      state.currentUtterance = utterance;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function stopSpeech() {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      state.currentUtterance = null;
+    }
+
+    function playBell() {
+      try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return;
+        const ctx = new Ctx();
+        const now = ctx.currentTime;
+
+        [880, 1320, 1760].forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + i * 0.03);
+          gain.gain.setValueAtTime(0.0001, now + i * 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.18, now + i * 0.03 + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.03 + 0.55);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + i * 0.03);
+          osc.stop(now + i * 0.03 + 0.6);
+        });
+      } catch (e) {
+        console.warn('Audio non disponibile', e);
+      }
+    }
+
+    els.languageSelect.addEventListener('change', (e) => {
+      state.lang = e.target.value;
+      stopSpeech();
+      updateUIStrings();
+    });
+
+    els.startBtn.addEventListener('click', startQuiz);
+    els.restartBtn.addEventListener('click', startQuiz);
+    els.playAgainBtn.addEventListener('click', startQuiz);
+    els.nextBtn.addEventListener('click', nextQuestion);
+    els.speakBtn.addEventListener('click', speakQuestion);
+    els.stopBtn.addEventListener('click', stopSpeech);
+
+    if ('speechSynthesis' in window) {
+      initVoices();
+      window.speechSynthesis.onvoiceschanged = initVoices;
+    }
+
+    updateUIStrings();
+  </script>
+</body>
+</html>

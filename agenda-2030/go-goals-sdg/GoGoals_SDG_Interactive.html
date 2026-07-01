@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GO GOALS! — Obiettivi per lo Sviluppo Sostenibile</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a1628;
+    --card-bg: #0f2040;
+    --accent: #FFD700;
+    --white: #f0f8ff;
+    --correct: #44d9a0;
+    --wrong: #ff5f6d;
+    --sdg1: #e5243b; --sdg2: #dda63a; --sdg3: #4c9f38; --sdg4: #c5192d;
+    --sdg5: #ff3a21; --sdg6: #26bde2; --sdg7: #fcc30b; --sdg8: #a21942;
+    --sdg9: #fd6925; --sdg10: #dd1367; --sdg11: #fd9d24; --sdg12: #bf8b2e;
+    --sdg13: #3f7e44; --sdg14: #0a97d9; --sdg15: #56c02b; --sdg16: #00689d; --sdg17: #19486a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: 'Nunito', sans-serif;
+    color: var(--white);
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(38,189,226,0.07) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(86,192,43,0.07) 0%, transparent 50%);
+  }
+
+  /* STARS */
+  .stars {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 0; overflow: hidden;
+  }
+  .star {
+    position: absolute; background: white; border-radius: 50%;
+    animation: twinkle var(--d, 3s) ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%,100% { opacity: 0.1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.3); }
+  }
+
+  /* SCREENS */
+  .screen {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .screen.active { display: flex; }
+
+  /* ===== HOME ===== */
+  #home {
+    text-align: center;
+    gap: 30px;
+  }
+
+  .logo-ring {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: conic-gradient(
+      var(--sdg1) 0deg 21deg, var(--sdg2) 21deg 42deg, var(--sdg3) 42deg 63deg,
+      var(--sdg4) 63deg 84deg, var(--sdg5) 84deg 105deg, var(--sdg6) 105deg 126deg,
+      var(--sdg7) 126deg 147deg, var(--sdg8) 147deg 168deg, var(--sdg9) 168deg 189deg,
+      var(--sdg10) 189deg 210deg, var(--sdg11) 210deg 231deg, var(--sdg12) 231deg 252deg,
+      var(--sdg13) 252deg 273deg, var(--sdg14) 273deg 294deg, var(--sdg15) 294deg 315deg,
+      var(--sdg16) 315deg 336deg, var(--sdg17) 336deg 360deg
+    );
+    margin: 0 auto;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    animation: spin-slow 20s linear infinite;
+    box-shadow: 0 0 40px rgba(255,215,0,0.3);
+  }
+  .logo-ring::after {
+    content: '🌍';
+    position: absolute;
+    width: 80px; height: 80px;
+    background: var(--bg);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+  }
+  @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  h1.game-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    color: var(--accent);
+    text-shadow: 0 0 30px rgba(255,215,0,0.5), 3px 3px 0 rgba(0,0,0,0.5);
+    line-height: 1;
+    letter-spacing: 2px;
+  }
+
+  .subtitle {
+    font-size: 1.1rem;
+    color: rgba(240,248,255,0.7);
+    max-width: 500px;
+    line-height: 1.6;
+  }
+
+  .mode-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    max-width: 700px;
+    width: 100%;
+  }
+
+  .mode-card {
+    background: var(--card-bg);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 24px 20px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-align: center;
+  }
+  .mode-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    border-color: var(--accent);
+    box-shadow: 0 10px 40px rgba(255,215,0,0.2);
+  }
+  .mode-card .mode-icon { font-size: 2.5rem; margin-bottom: 12px; }
+  .mode-card h3 { font-family: 'Fredoka One', cursive; font-size: 1.3rem; color: var(--accent); margin-bottom: 8px; }
+  .mode-card p { font-size: 0.85rem; color: rgba(240,248,255,0.6); line-height: 1.5; }
+
+  /* ===== SDG EXPLORER ===== */
+  #explorer {
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .screen-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    color: var(--accent);
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .sdg-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 10px;
+    max-width: 900px;
+    width: 100%;
+  }
+
+  .sdg-hex {
+    aspect-ratio: 1;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    padding: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  .sdg-hex:hover { transform: scale(1.12) translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
+  .sdg-hex .sdg-num {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    color: white;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+  }
+  .sdg-hex .sdg-icon { font-size: 1.4rem; }
+  .sdg-hex .sdg-label {
+    font-size: 0.5rem;
+    font-weight: 800;
+    color: white;
+    text-align: center;
+    line-height: 1.2;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    margin-top: 2px;
+  }
+
+  /* SDG Detail Panel */
+  .sdg-detail {
+    display: none;
+    background: var(--card-bg);
+    border-radius: 24px;
+    padding: 28px;
+    max-width: 600px;
+    width: 100%;
+    border: 2px solid rgba(255,255,255,0.1);
+    animation: fadeSlideUp 0.4s ease;
+    position: relative;
+  }
+  .sdg-detail.visible { display: block; }
+  .sdg-detail .detail-num {
+    font-family: 'Fredoka One', cursive;
+    font-size: 4rem;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .sdg-detail .detail-name {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.6rem;
+    margin-bottom: 12px;
+  }
+  .sdg-detail .detail-desc {
+    font-size: 0.95rem;
+    color: rgba(240,248,255,0.75);
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+  .detail-close {
+    position: absolute; top: 16px; right: 16px;
+    background: rgba(255,255,255,0.1);
+    border: none; color: white; cursor: pointer;
+    width: 32px; height: 32px; border-radius: 50%;
+    font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .detail-close:hover { background: rgba(255,255,255,0.2); }
+
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== QUIZ ===== */
+  #quiz { gap: 20px; max-width: 700px; margin: 0 auto; width: 100%; }
+
+  .quiz-header {
+    width: 100%;
+    display: flex; align-items: center; gap: 16px;
+  }
+
+  .sdg-badge {
+    width: 60px; height: 60px; border-radius: 14px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .sdg-badge .b-num { font-family: 'Fredoka One', cursive; font-size: 1.5rem; color: white; }
+  .sdg-badge .b-icon { font-size: 1.3rem; }
+
+  .quiz-progress {
+    flex: 1;
+  }
+  .progress-label {
+    font-size: 0.8rem;
+    color: rgba(240,248,255,0.5);
+    margin-bottom: 6px;
+    display: flex; justify-content: space-between;
+  }
+  .progress-bar {
+    height: 8px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #ff8c00);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+
+  .score-display {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem;
+    color: var(--accent);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .question-card {
+    background: var(--card-bg);
+    border-radius: 24px;
+    padding: 32px 28px;
+    width: 100%;
+    border: 2px solid rgba(255,255,255,0.08);
+    position: relative;
+    overflow: hidden;
+  }
+  .question-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--sdg-color, var(--accent));
+  }
+
+  .sdg-tag {
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(240,248,255,0.5);
+    margin-bottom: 16px;
+  }
+
+  .question-text {
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.6;
+    margin-bottom: 24px;
+    color: var(--white);
+  }
+
+  .options-grid {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+
+  .option-btn {
+    background: rgba(255,255,255,0.05);
+    border: 2px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 14px 18px;
+    color: var(--white);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.25s ease;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .option-btn:hover:not(:disabled) {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.3);
+    transform: translateX(4px);
+  }
+  .option-btn.correct {
+    background: rgba(68,217,160,0.15);
+    border-color: var(--correct);
+    color: var(--correct);
+  }
+  .option-btn.wrong {
+    background: rgba(255,95,109,0.15);
+    border-color: var(--wrong);
+    color: var(--wrong);
+  }
+  .option-letter {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; font-weight: 900;
+    flex-shrink: 0;
+  }
+
+  .feedback-box {
+    margin-top: 16px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: none;
+    animation: fadeSlideUp 0.3s ease;
+  }
+  .feedback-box.show { display: flex; align-items: center; gap: 10px; }
+  .feedback-box.correct-fb { background: rgba(68,217,160,0.15); color: var(--correct); border: 1px solid rgba(68,217,160,0.3); }
+  .feedback-box.wrong-fb { background: rgba(255,95,109,0.1); color: #ff8080; border: 1px solid rgba(255,95,109,0.25); }
+
+  .next-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 16px;
+    border: none;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: none;
+    background: linear-gradient(135deg, var(--accent), #ff8c00);
+    color: #1a1a2e;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 20px rgba(255,215,0,0.3);
+  }
+  .next-btn.show { display: block; }
+  .next-btn:hover { transform: scale(1.03) translateY(-2px); box-shadow: 0 8px 30px rgba(255,215,0,0.4); }
+
+  /* ===== RESULTS ===== */
+  #results {
+    gap: 24px;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .result-circle {
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    margin: 0 auto;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .result-circle svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+  .result-circle .result-score {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.8rem;
+    color: var(--accent);
+    position: relative;
+  }
+  .result-circle .result-total {
+    font-size: 0.85rem;
+    color: rgba(240,248,255,0.5);
+    position: relative;
+  }
+
+  .result-message {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.8rem;
+    line-height: 1.3;
+  }
+  .result-sub {
+    color: rgba(240,248,255,0.65);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .results-breakdown {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 20px;
+    width: 100%;
+    max-width: 500px;
+  }
+  .breakdown-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    color: rgba(240,248,255,0.6);
+    margin-bottom: 14px;
+    text-align: left;
+  }
+  .sdg-result-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 8px;
+  }
+  .mini-badge {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fredoka One', cursive; font-size: 0.9rem; color: white;
+    flex-shrink: 0;
+  }
+  .sdg-result-bar {
+    flex: 1; height: 8px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden;
+  }
+  .sdg-result-fill {
+    height: 100%; border-radius: 4px;
+    transition: width 1s ease 0.3s;
+  }
+  .sdg-result-pct {
+    font-size: 0.78rem; font-weight: 800;
+    color: rgba(240,248,255,0.5);
+    min-width: 36px; text-align: right;
+  }
+
+  /* BUTTONS */
+  .btn {
+    padding: 14px 32px;
+    border-radius: 14px;
+    border: none;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    letter-spacing: 1px;
+  }
+  .btn:hover { transform: scale(1.05) translateY(-2px); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #ff8c00);
+    color: #1a1a2e;
+    box-shadow: 0 4px 20px rgba(255,215,0,0.3);
+  }
+  .btn-secondary {
+    background: rgba(255,255,255,0.08);
+    color: var(--white);
+    border: 2px solid rgba(255,255,255,0.15);
+  }
+  .btn-secondary:hover { background: rgba(255,255,255,0.13); }
+
+  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+  /* SDG SELECTOR for quiz mode */
+  .sdg-selector {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 24px;
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+    border: 2px solid rgba(255,255,255,0.08);
+  }
+  .sdg-selector h3 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .filter-chips {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 20px;
+  }
+  .chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 2px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.05);
+    color: rgba(240,248,255,0.7);
+    font-size: 0.82rem; font-weight: 800;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .chip.active, .chip:hover {
+    background: rgba(255,215,0,0.15);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* Confetti */
+  .confetti-piece {
+    position: fixed; width: 10px; height: 10px;
+    border-radius: 2px; pointer-events: none; z-index: 999;
+    animation: confetti-fall var(--d) ease-out forwards;
+  }
+  @keyframes confetti-fall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* Back button */
+  .back-btn {
+    position: absolute; top: 20px; left: 20px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 8px 14px;
+    color: rgba(240,248,255,0.7);
+    font-size: 0.85rem; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+    z-index: 10;
+  }
+  .back-btn:hover { background: rgba(255,255,255,0.14); color: white; }
+
+  .sdg-counter {
+    display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; margin-top: 8px;
+  }
+  .sdg-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    transition: all 0.3s;
+    opacity: 0.3;
+  }
+  .sdg-dot.answered { opacity: 1; transform: scale(1.2); }
+
+  @media (max-width: 500px) {
+    .sdg-grid { grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); }
+    .question-card { padding: 20px 16px; }
+    .mode-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<!-- HOME -->
+<div class="screen active" id="home">
+  <div class="logo-ring"></div>
+  <h1 class="game-title">GO GOALS!</h1>
+  <p class="subtitle">Impara e comprendi i 17 Obiettivi per lo Sviluppo Sostenibile dell'Agenda 2030 delle Nazioni Unite</p>
+  <div class="mode-grid">
+    <div class="mode-card" onclick="showScreen('explorer')">
+      <div class="mode-icon">🗺️</div>
+      <h3>Esplora gli SDGs</h3>
+      <p>Scopri tutti e 17 gli obiettivi, cosa significano e perché sono importanti</p>
+    </div>
+    <div class="mode-card" onclick="startQuizSetup()">
+      <div class="mode-icon">🎯</div>
+      <h3>Quiz Rapido</h3>
+      <p>Rispondi a 10 domande casuali su tutti gli obiettivi e scopri il tuo punteggio</p>
+    </div>
+    <div class="mode-card" onclick="startFullQuiz()">
+      <div class="mode-icon">🏆</div>
+      <h3>Sfida Completa</h3>
+      <p>Affronta tutte le domande del gioco originale e diventa un esperto degli SDGs!</p>
+    </div>
+  </div>
+</div>
+
+<!-- EXPLORER -->
+<div class="screen" id="explorer">
+  <button class="back-btn" onclick="showScreen('home')">← Home</button>
+  <h2 class="screen-title">I 17 Obiettivi 🌍</h2>
+  <div class="sdg-grid" id="sdgGrid"></div>
+  <div class="sdg-detail" id="sdgDetail">
+    <button class="detail-close" onclick="document.getElementById('sdgDetail').classList.remove('visible')">✕</button>
+    <div class="detail-num" id="detailNum"></div>
+    <div class="detail-name" id="detailName"></div>
+    <div class="detail-desc" id="detailDesc"></div>
+  </div>
+</div>
+
+<!-- QUIZ SETUP -->
+<div class="screen" id="quizSetup">
+  <button class="back-btn" onclick="showScreen('home')">← Home</button>
+  <h2 class="screen-title">Scegli il Quiz 🎯</h2>
+  <div class="sdg-selector">
+    <h3>Quante domande?</h3>
+    <div class="filter-chips" id="qCountChips">
+      <div class="chip active" data-val="10" onclick="selectChip(this,'qCount')">10 domande</div>
+      <div class="chip" data-val="20" onclick="selectChip(this,'qCount')">20 domande</div>
+      <div class="chip" data-val="999" onclick="selectChip(this,'qCount')">Tutte!</div>
+    </div>
+    <h3>Obiettivi</h3>
+    <div class="filter-chips" id="sdgFilterChips">
+      <div class="chip active" data-val="all" onclick="selectChip(this,'sdgFilter')">Tutti gli SDGs</div>
+      <div class="chip" data-val="1-9" onclick="selectChip(this,'sdgFilter')">SDG 1–9</div>
+      <div class="chip" data-val="10-17" onclick="selectChip(this,'sdgFilter')">SDG 10–17</div>
+    </div>
+    <button class="btn btn-primary" onclick="launchQuiz()" style="margin-top:8px">Inizia! →</button>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="screen" id="quiz">
+  <div class="quiz-header">
+    <div class="sdg-badge" id="quizBadge">
+      <span class="b-num" id="badgeNum">1</span>
+      <span class="b-icon" id="badgeIcon">🎯</span>
+    </div>
+    <div class="quiz-progress">
+      <div class="progress-label">
+        <span id="qProgress">Domanda 1 di 10</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="sdg-counter" id="sdgDots"></div>
+    </div>
+    <div class="score-display" id="scoreDisplay">⭐ 0</div>
+  </div>
+
+  <div class="question-card" id="questionCard">
+    <div class="sdg-tag" id="sdgTag">SDG 1 — SCONFIGGERE LA POVERTÀ</div>
+    <div class="question-text" id="questionText">Domanda...</div>
+    <div class="options-grid" id="optionsGrid"></div>
+    <div class="feedback-box" id="feedbackBox"></div>
+  </div>
+
+  <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Prossima domanda →</button>
+  <button class="back-btn" onclick="showScreen('home')" style="position:relative;top:0;left:0">← Abbandona</button>
+</div>
+
+<!-- RESULTS -->
+<div class="screen" id="results">
+  <div class="result-circle" id="resultCircle">
+    <svg viewBox="0 0 160 160">
+      <circle cx="80" cy="80" r="70" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="10"/>
+      <circle cx="80" cy="80" r="70" fill="none" stroke="url(#scoreGrad)" stroke-width="10"
+        stroke-dasharray="439.8" stroke-dashoffset="439.8" stroke-linecap="round" id="scoreCircle"/>
+      <defs>
+        <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#FFD700"/>
+          <stop offset="100%" stop-color="#ff8c00"/>
+        </linearGradient>
+      </defs>
+    </svg>
+    <div class="result-score" id="resultScore">0</div>
+    <div class="result-total" id="resultTotal">/ 0</div>
+  </div>
+
+  <div class="result-message" id="resultMessage">Bravo!</div>
+  <div class="result-sub" id="resultSub"></div>
+
+  <div class="results-breakdown" id="resultsBreakdown">
+    <div class="breakdown-title">Risultati per obiettivo</div>
+    <div id="breakdownRows"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="startFullQuiz()">Gioca ancora!</button>
+    <button class="btn btn-secondary" onclick="showScreen('explorer')">Studia gli SDGs</button>
+    <button class="btn btn-secondary" onclick="showScreen('home')">Home</button>
+  </div>
+</div>
+
+<script>
+// ======= DATA =======
+const SDGs = [
+  { n:1, name:"Sconfiggere la Povertà", icon:"🏘️", desc:"Porre fine a ogni forma di povertà nel mondo. Circa 800 milioni di persone vivono ancora in condizioni di estrema povertà, con meno di 1,25 dollari al giorno. Dal 1990, oltre 1 miliardo di persone sono uscite dalla povertà, ma la strada è ancora lunga.", color:"#e5243b" },
+  { n:2, name:"Sconfiggere la Fame", icon:"🌾", desc:"Porre fine alla fame, raggiungere la sicurezza alimentare, migliorare la nutrizione e promuovere l'agricoltura sostenibile. Nel mondo si produce cibo a sufficienza per tutti, ma circa 900 milioni di persone non mangiano abbastanza. Il problema è la distribuzione e l'accesso al cibo.", color:"#dda63a" },
+  { n:3, name:"Salute e Benessere", icon:"❤️", desc:"Assicurare la salute e promuovere il benessere per tutti a tutte le età. L'aspettativa media di vita nel mondo è circa 70 anni. Malattie come la malaria, trasmessa dalla zanzara, uccidono ancora milioni di persone ogni anno, soprattutto nei Paesi in via di sviluppo.", color:"#4c9f38" },
+  { n:4, name:"Istruzione di Qualità", icon:"📚", desc:"Assicurare un'istruzione di qualità e promuovere opportunità di apprendimento permanente. Circa l'80% degli adulti nel mondo sa leggere e scrivere. La maggior parte dei bambini che non frequentano la scuola vive in Africa. L'istruzione aiuta a trovare lavoro e migliorare le proprie condizioni di vita.", color:"#c5192d" },
+  { n:5, name:"Parità di Genere", icon:"⚧️", desc:"Raggiungere la parità di genere ed emancipare tutte le donne e le ragazze. Le donne dovrebbero ricevere lo stesso salario degli uomini per lo stesso lavoro. Solo in pochi Paesi al mondo ci sono più donne che uomini in Parlamento — il Ruanda è stato il primo a raggiungere questo traguardo.", color:"#ff3a21" },
+  { n:6, name:"Acqua Pulita", icon:"💧", desc:"Assicurare a tutti la disponibilità e la gestione sostenibile di acqua e di strutture igienico-sanitarie. Solo il 3% dell'acqua del pianeta è potabile. Più persone nel mondo hanno uno smartphone rispetto a chi ha accesso a un gabinetto. La doccia consuma meno acqua di un bagno.", color:"#26bde2" },
+  { n:7, name:"Energia Pulita", icon:"☀️", desc:"Assicurare a tutti l'accesso a un'energia accessibile, sicura, sostenibile e moderna. L'energia rinnovabile — come solare, eolico e le onde marine — è inesauribile. Il carbone NON è energia pulita. Non tutti nel mondo hanno accesso all'energia elettrica.", color:"#fcc30b" },
+  { n:8, name:"Lavoro Dignitoso", icon:"💼", desc:"Promuovere una crescita economica sostenuta, inclusiva e sostenibile, un'occupazione estesa e produttiva e un lavoro dignitoso per tutti. Nel mondo ci sono circa 200 milioni di disoccupati. Avere un lavoro non garantisce automaticamente di uscire dalla povertà.", color:"#a21942" },
+  { n:9, name:"Innovazione e Infrastrutture", icon:"🏗️", desc:"Costruire infrastrutture durevoli, promuovere un'industrializzazione inclusiva e sostenibile e favorire l'innovazione. Una fabbrica sostenibile è quella che non arreca danni all'ambiente. Scuole pulite, insegnanti e libri sono infrastrutture fondamentali per l'istruzione.", color:"#fd6925" },
+  { n:10, name:"Ridurre le Diseguaglianze", icon:"⚖️", desc:"Ridurre le diseguaglianze tra le nazioni e all'interno di ciascuna di esse. Il modo migliore per combattere la povertà è condividere la ricchezza prodotta nel mondo. Per ridurre le diseguaglianze, tutti i bambini devono avere accesso a una buona istruzione.", color:"#dd1367" },
+  { n:11, name:"Città Sostenibili", icon:"🏙️", desc:"Rendere le città e gli insediamenti umani inclusivi, sicuri, resilienti e sostenibili. Nel 2030, il 60% della popolazione mondiale vivrà in aree urbane. L'urbanizzazione più rapida al mondo avviene nei Paesi in via di sviluppo, dove circa il 55% vive in aree degradate.", color:"#fd9d24" },
+  { n:12, name:"Consumo Responsabile", icon:"♻️", desc:"Garantire modelli sostenibili di consumo e di produzione. Un terzo di tutto il cibo prodotto nel mondo viene sprecato ogni giorno. I sacchetti di plastica rappresentano un enorme problema ambientale — il Ruanda è stato il primo Paese a metterli al bando.", color:"#bf8b2e" },
+  { n:13, name:"Lotta al Clima", icon:"🌡️", desc:"Prendere provvedimenti immediati per contrastare il cambiamento climatico. Il riscaldamento globale è causato dall'aumento di anidride carbonica (CO₂) nell'atmosfera. Porterà a maggiori inondazioni e violente perturbazioni. Nel 2015, i leader mondiali hanno firmato l'Accordo di Parigi.", color:"#3f7e44" },
+  { n:14, name:"Vita Sott'Acqua", icon:"🐟", desc:"Preservare e utilizzare in modo sostenibile gli oceani e i mari. La pesca eccessiva sta riducendo le risorse ittiche. Solo circa il 5% di tutte le specie oceaniche è stato identificato dalla scienza. I rifiuti in plastica sulle spiagge inquinano i mari.", color:"#0a97d9" },
+  { n:15, name:"Vita sulla Terra", icon:"🌳", desc:"Proteggere e ripristinare gli ecosistemi terrestri. Circa la metà di tutte le foreste del mondo è già scomparsa. Gli alberi producono ossigeno e rappresentano habitat naturali. La perdita di biodiversità è principalmente causata dalle attività umane.", color:"#56c02b" },
+  { n:16, name:"Pace e Giustizia", icon:"☮️", desc:"Promuovere società pacifiche e inclusive per uno sviluppo sostenibile. Una democrazia è un Paese governato dal popolo. Un casco blu è un soldato che lavora per le Nazioni Unite per il mantenimento della pace. I bambini soldato sono bambini arruolati in gruppi armati.", color:"#00689d" },
+  { n:17, name:"Partnership per gli Obiettivi", icon:"🤝", desc:"Rafforzare gli strumenti di attuazione e rinvigorire il partenariato globale. Raggiungere i 17 SDGs richiede il coinvolgimento di tutti: cittadini, governi e aziende. Internet ha reso molto più facile la comunicazione tra partner a livello globale.", color:"#19486a" },
+];
+
+const ALL_QUESTIONS = [
+  // SDG 1
+  { sdg:1, q:"Come si fa a capire se una persona vive in condizioni di povertà?", opts:["Non ha uno smartphone","Non è in grado di soddisfare i propri bisogni fondamentali, tra cui cibo, assistenza sanitaria e istruzione","Non è ben vestita"], ans:1 },
+  { sdg:1, q:"Il numero di persone che oggi vivono in condizioni di povertà è inferiore rispetto a 25 anni fa?", opts:["No, oggi 1 miliardo di persone in più vivono in condizioni di povertà","Sì, 1 miliardo di persone sono uscite dalla povertà"], ans:1 },
+  { sdg:1, q:"Quante persone vivono in condizioni di estrema povertà a livello mondiale?", opts:["Circa 800 persone","Circa 8.000 persone","Più di 800 milioni di persone"], ans:2 },
+  { sdg:1, q:"Nel 1990, circa quattro persone su dieci vivevano in condizioni di estrema povertà. Oggi quante sono?", opts:["1 su 10","3 su 10","5 su 10"], ans:0 },
+  { sdg:1, q:"La maggior parte delle persone che vivono in condizioni di povertà si trova in:", opts:["Europa","Nord America e Sud America","Africa e Asia"], ans:2 },
+  // SDG 2
+  { sdg:2, q:"Nel mondo si produce cibo a sufficienza per sfamare tutti?", opts:["No, perché ho sempre fame","Si producono cibi sani a sufficienza, ma non abbastanza dolci e bibite gassate","C'è cibo a sufficienza, ma non tutti possono permettersi di comprarlo"], ans:2 },
+  { sdg:2, q:"Vero o falso: Il numero di persone al mondo che muoiono di fame sta diminuendo.", opts:["Vero","Falso"], ans:0 },
+  { sdg:2, q:"Quante persone al mondo non mangiano a sufficienza per essere considerate in buona salute?", opts:["Circa 90 persone","Circa 9.000 persone","Circa 900 milioni di persone"], ans:2 },
+  { sdg:2, q:"Che cos'è la malnutrizione?", opts:["Non poter consumare pasti di tre portate","Non mangiare carne ogni giorno","Non mangiare cibi sani a sufficienza per un certo periodo di tempo"], ans:2 },
+  { sdg:2, q:"Quale di queste affermazioni è vera riguardo al cibo?", opts:["È necessario bere almeno una bibita gassata al giorno per mantenersi in buona salute","Abbiamo cibo a sufficienza per sfamare tutto il mondo","È possibile mantenersi in buona salute senza mangiare frutta e verdura"], ans:1 },
+  // SDG 3
+  { sdg:3, q:"Qual è l'aspettativa media di vita nel mondo?", opts:["50 anni","60 anni","70 anni"], ans:2 },
+  { sdg:3, q:"Scegli due cose che potrebbero aiutare a prevenire la mortalità dei bambini sotto i 5 anni.", opts:["Cibi nutrienti e acqua potabile pulita","Telefoni cellulari e bibite gassate","Solo medicine costose"], ans:0 },
+  { sdg:3, q:"Che cosa è meglio per i neonati?", opts:["L'alimentazione con latte artificiale","Bere acqua","L'allattamento al seno"], ans:2 },
+  { sdg:3, q:"Quale di questi insetti ha contribuito a diffondere la malaria?", opts:["La zanzara","La libellula","La lucciola"], ans:0 },
+  { sdg:3, q:"Per quanti minuti al giorno dovrebbero fare attività fisica i bambini tra i 5 e i 17 anni?", opts:["60 minuti","30 minuti","Non è necessario ogni giorno"], ans:0 },
+  // SDG 4
+  { sdg:4, q:"In quale continente vive la maggior parte dei bambini che non frequentano la scuola?", opts:["Europa","Asia","America","Africa"], ans:3 },
+  { sdg:4, q:"Vero o falso: A livello mondiale il numero di ragazze che frequentano la scuola è inferiore a quello dei ragazzi.", opts:["Falso","Vero"], ans:1 },
+  { sdg:4, q:"L'istruzione...", opts:["Rende più difficile trovare un lavoro","Aiuta a trovare lavoro e a migliorare le proprie condizioni di vita","È utile solo ai ragazzi molto intelligenti"], ans:1 },
+  { sdg:4, q:"Un'istruzione di qualità è utile per...", opts:["Migliorare le proprie condizioni di salute","Diminuire la povertà","Entrambi"], ans:2 },
+  { sdg:4, q:"Qual è oggi la percentuale di adulti alfabetizzati (che sanno leggere e scrivere)?", opts:["80%","60%","30%"], ans:0 },
+  { sdg:4, q:"Quali infrastrutture sono importanti per garantire un'istruzione di qualità?", opts:["I parchi giochi e le merendine","Scuole pulite, insegnanti e libri","I distributori automatici di bibite"], ans:1 },
+  // SDG 5
+  { sdg:5, q:"Soltanto in un Paese al mondo ci sono più donne che uomini in Parlamento. Di che Paese si tratta?", opts:["Il Regno Unito","La Norvegia","La Francia","Il Ruanda","Il Perù"], ans:3 },
+  { sdg:5, q:"Le donne dovrebbero ricevere lo stesso salario degli uomini se fanno lo stesso lavoro?", opts:["Sì certo, uomini e donne hanno gli stessi diritti","No, gli uomini dovrebbero essere pagati di più perché sono più forti"], ans:0 },
+  { sdg:5, q:"Qual è stato il primo Paese al mondo a concedere alle donne pieni diritti politici?", opts:["La Francia","Gli Stati Uniti d'America","La Finlandia"], ans:2 },
+  { sdg:5, q:"In quanti Paesi al mondo il Presidente o il Capo di Stato è una donna?", opts:["5","20","100"], ans:1 },
+  { sdg:5, q:"Chi dovrebbe cucinare e fare le pulizie in casa?", opts:["Gli uomini di casa","Le donne di casa","Tutti dovrebbero dare una mano!"], ans:2 },
+  { sdg:5, q:"In ambito scientifico e tecnologico, qual è la percentuale dei ricercatori costituita da donne?", opts:["50%","30%","70%"], ans:1 },
+  // SDG 6
+  { sdg:6, q:"Come si può ridurre l'utilizzo d'acqua?", opts:["Non c'è carenza d'acqua dove vivo, posso utilizzarne quanta voglio","Facendo la doccia invece del bagno","Bevendo bibite gassate invece dell'acqua"], ans:1 },
+  { sdg:6, q:"L'acqua potabile è:", opts:["Acqua sicura da bere","L'acqua che troviamo nei vasi delle piante","Acqua che sembra pulita"], ans:0 },
+  { sdg:6, q:"Quale di queste affermazioni è vera?", opts:["Ci sono più persone con un telefono cellulare che persone con un gabinetto","La maggioranza delle persone ha un gabinetto ma non può permettersi un telefono","Tutti hanno sia un telefono cellulare che un gabinetto"], ans:0 },
+  { sdg:6, q:"Qual è la percentuale di acqua potabile al mondo?", opts:["Solo il 3%","La metà di tutta l'acqua, il 50%","Quasi tutta, il 97%"], ans:0 },
+  { sdg:6, q:"Dove va a finire la maggior parte delle acque reflue prodotte dalle attività umane?", opts:["Viene trattata e riciclata","Viene immagazzinata in un luogo sicuro","Viene scaricata nei fiumi e nel mare senza provvedere all'eliminazione degli inquinanti"], ans:2 },
+  // SDG 7
+  { sdg:7, q:"Trova la risposta sbagliata. Si può produrre energia pulita con...", opts:["Il carbone","Il sole","Il vento","Le onde"], ans:0 },
+  { sdg:7, q:"Che cosa si intende per efficienza energetica?", opts:["Una lampada che emette una luce intensa","Poter utilizzare l'energia senza preoccuparsi dei consumi","Un dispositivo o edificio che utilizza una quantità di energia relativamente bassa"], ans:2 },
+  { sdg:7, q:"Vero o falso: Tutti hanno accesso all'energia elettrica.", opts:["Vero","Falso"], ans:1 },
+  { sdg:7, q:"Alcune fonti energetiche sono rinnovabili, perché?", opts:["Perché non inquinano","Perché sono nuove","Perché si reintegrano naturalmente in un breve periodo di tempo"], ans:2 },
+  { sdg:7, q:"Quale di queste è una fonte energetica rinnovabile?", opts:["Il petrolio","Il gas","La luce del sole"], ans:2 },
+  { sdg:7, q:"I Paesi dovrebbero utilizzare più:", opts:["Carbone e petrolio per l'energia","Energia nucleare","Energia derivante da sole, vento e onde"], ans:2 },
+  // SDG 8
+  { sdg:8, q:"Che cos'è una fabbrica sostenibile?", opts:["Una fabbrica costruita molto tempo fa e ancora in funzione","Una fabbrica che produce rifiuti tossici","Una fabbrica che non arreca danni all'ambiente"], ans:2 },
+  { sdg:8, q:"Avere un lavoro significa essere al riparo dalla povertà?", opts:["Sì, perché si lavora per guadagnare denaro","No, si può avere un lavoro e trovarsi lo stesso in condizioni di povertà"], ans:1 },
+  { sdg:8, q:"Quanti sono i disoccupati a livello mondiale?", opts:["2 milioni","20 milioni","200 milioni"], ans:2 },
+  { sdg:8, q:"Che cosa si intende per 'crescita economica'?", opts:["Mettere da parte ogni mese sempre più denaro","L'aumento dei prezzi","L'aumento del valore dei beni e servizi prodotti da un Paese"], ans:2 },
+  // SDG 9
+  { sdg:9, q:"Vero o falso: Tutti hanno accesso a internet.", opts:["Vero","Falso"], ans:1 },
+  { sdg:9, q:"Quali infrastrutture sono importanti per garantire un'istruzione di qualità?", opts:["I parchi giochi e le merendine","Scuole pulite, insegnanti e libri","I distributori automatici di bibite"], ans:1 },
+  { sdg:9, q:"Quale tra queste innovazioni è la migliore per combattere il cambiamento climatico?", opts:["L'auto elettrica","L'auto diesel","L'auto a benzina"], ans:0 },
+  { sdg:9, q:"Soluzioni per il risparmio di energia e per la tutela del pianeta già esistono. Quale NON è reale?", opts:["Biciclette","Autobus elettrici","Macchine volanti"], ans:2 },
+  { sdg:9, q:"L'industria del petrolio è la più inquinante al mondo. Qual è la seconda?", opts:["Estrazione del carbone","Industria tessile","Telefonia mobile"], ans:1 },
+  // SDG 10
+  { sdg:10, q:"Qual è il modo migliore per combattere la povertà?", opts:["Non fare niente e ignorare il problema","Condividere la ricchezza prodotta nel mondo","Impedire agli stranieri l'ingresso nel Paese"], ans:1 },
+  { sdg:10, q:"Vero o Falso: Negli ultimi 25 anni, il numero di persone che vive in condizioni di estrema povertà NON è diminuito.", opts:["Vero","Falso"], ans:1 },
+  { sdg:10, q:"Per ridurre le diseguaglianze in ambito sanitario tutti i bambini dovrebbero avere accesso a...", opts:["Solo acqua potabile pulita","Solo cure mediche","Acqua potabile, cure mediche e vaccini — tutte le precedenti"], ans:2 },
+  { sdg:10, q:"Possiamo combattere le diseguaglianze facendo in modo che:", opts:["Tutti i bambini abbiano accesso ad una buona istruzione","Tutti indossino gli stessi vestiti","Tutti guardino la stessa TV"], ans:0 },
+  // SDG 11
+  { sdg:11, q:"Quante persone, nei Paesi in via di sviluppo, vivono in aree degradate?", opts:["30%","55%","80%"], ans:1 },
+  { sdg:11, q:"Nel 2030, quale sarà la percentuale di persone al mondo che vivrà in aree urbane?", opts:["60%","100%","20%"], ans:0 },
+  { sdg:11, q:"Dov'è situata l'urbanizzazione più rapida al mondo?", opts:["Europa","Stati Uniti d'America","Nei Paesi in via di sviluppo"], ans:2 },
+  // SDG 12
+  { sdg:12, q:"Quanto cibo viene sprecato ogni giorno nel mondo?", opts:["Nessuno, tutto il cibo viene mangiato o congelato","Un terzo di tutto il cibo prodotto","Molto poco, le persone hanno notevolmente ridotto lo spreco"], ans:1 },
+  { sdg:12, q:"I sacchetti di plastica rappresentano un grande problema. Quale Paese è stato il primo a metterli al bando?", opts:["Svezia","Russia","Ruanda"], ans:2 },
+  { sdg:12, q:"Cos'è l'energia rinnovabile?", opts:["Una forma di energia inesauribile generata attraverso risorse naturali","Una forma di energia proveniente dallo spazio","Una forma di energia utilizzata dai faraoni dell'Antico Egitto"], ans:0 },
+  // SDG 13
+  { sdg:13, q:"Quale delle seguenti dichiarazioni è corretta riguardo al riscaldamento globale?", opts:["Non esiste perché lo scorso inverno faceva molto freddo","Non esiste perché nel mondo ci sono ancora le calotte di ghiaccio","Porterà a maggiori inondazioni e violente perturbazioni atmosferiche"], ans:2 },
+  { sdg:13, q:"Il riscaldamento globale avviene a causa dell'aumento di un particolare gas nell'atmosfera. Di che gas si tratta?", opts:["L'ozono","L'anidride carbonica","Il gas mostarda"], ans:1 },
+  { sdg:13, q:"Nel 2015, i leader mondiali hanno preparato un piano per il nostro clima. Dove?", opts:["Parigi (Accordo di Parigi)","Londra (Accordo del Big Ben)","New York (Accordo di Manhattan)"], ans:0 },
+  { sdg:13, q:"Dobbiamo salvaguardare le nostre foreste per combattere il cambiamento climatico perché:", opts:["Le foreste sono un ambiente gradevole in cui poter giocare","Gli alberi producono ossigeno","Abbiamo bisogno di legna per costruire case"], ans:1 },
+  // SDG 14
+  { sdg:14, q:"Dichiarazione: Ci sono un sacco di pesci nel mare", opts:["Vero, posso mangiarne quanti ne voglio!","Falso: pesca eccessiva, inquinamento e cambiamento climatico stanno riducendo le risorse ittiche degli oceani"], ans:1 },
+  { sdg:14, q:"Quale delle seguenti contribuisce all'inquinamento idrico?", opts:["Rifiuti sulle spiagge","Meduse e granchi","Alga marina"], ans:0 },
+  { sdg:14, q:"Quale percentuale di tutte le specie che vivono nell'oceano è stata identificata?", opts:["Circa il 5%","Circa il 50%","Più dell'80%"], ans:0 },
+  { sdg:14, q:"Cos'è la pesca eccessiva?", opts:["Mangiare troppo pesce e sentirsi male","Pescare più pesci di quanti possano essere rimpiazzati in modo naturale","Ipernutrizione dei pesci affinché diventino più grossi"], ans:1 },
+  { sdg:14, q:"I sacchetti di plastica sono pericolosi per le tartarughe perché a volte li scambiano per...", opts:["Cibo","Un giocattolo","Un guscio"], ans:0 },
+  { sdg:14, q:"Vero o falso: Se non modifichiamo le nostre abitudini, entro il 2050 nell'oceano ci saranno più sacchetti di plastica che pesci.", opts:["Vero","Falso"], ans:0 },
+  // SDG 15
+  { sdg:15, q:"L'estinzione di specie animali è dovuta a…", opts:["Attività umane","Animali che si nutrono gli uni degli altri","Radiazioni emesse dal telefono cellulare"], ans:0 },
+  { sdg:15, q:"La Biodiversità è...", opts:["La diversità di specie animali e vegetali che vivono sul nostro pianeta","La varietà di prodotti salutari nei supermercati","Il numero di pianeti abitabili dall'uomo"], ans:0 },
+  { sdg:15, q:"A livello globale, le foreste...", opts:["Stanno crescendo, ci sono alberi ovunque","Vengono disboscate alla stessa velocità con cui vengono ripiantate","Stanno scomparendo: circa la metà di tutte le foreste sono già scomparse"], ans:2 },
+  { sdg:15, q:"Gli alberi sono fondamentali perché...", opts:["Rappresentano un habitat naturale","Ci si può arrampicare","La plastica viene prodotta dagli alberi"], ans:0 },
+  { sdg:15, q:"In che modo le api aiutano l'ambiente?", opts:["Aiutano le piante a crescere e producono cibo","Non aiutano, producono solamente il miele","Mangiano altri insetti"], ans:0 },
+  // SDG 16
+  { sdg:16, q:"Quale delle seguenti è una democrazia?", opts:["Un Paese governato da un dittatore","Un Paese governato dal popolo","Un Paese governato solo da uomini"], ans:1 },
+  { sdg:16, q:"Cos'è un bambino soldato?", opts:["Un bambino che partecipa a giochi di guerra con altri bambini","Un bambino che viene arruolato in un gruppo armato","Entrambe le cose"], ans:1 },
+  { sdg:16, q:"Un casco blu è...", opts:["Un soldato che lavora per le Nazioni Unite per il mantenimento della pace","Un pompiere che lavora nella marina","Un bambino soldato"], ans:0 },
+  { sdg:16, q:"Cos'è un campo per rifugiati?", opts:["Un campeggio estivo in montagna","Un campo per la protezione delle persone che fuggono dalla propria patria","Una base militare"], ans:1 },
+  { sdg:16, q:"Chi è un bambino rifugiato?", opts:["Un bambino che va in vacanza","Un bambino costretto a lasciare la propria casa a causa di un conflitto armato","Un bambino che trascorre la notte a casa di un amico"], ans:1 },
+  // SDG 17
+  { sdg:17, q:"Una partnership è...", opts:["Quando giochi con un amico a fare i genitori","Quando le persone e le organizzazioni si supportano reciprocamente per raggiungere un obiettivo comune","Quando due studenti mangiano allo stesso tavolo ogni giorno"], ans:1 },
+  { sdg:17, q:"In che modo il commercio equo contribuisce agli SDGs?", opts:["Offre a produttori e lavoratori migliori condizioni di commercio","Aumenta i profitti delle aziende","Incoraggia i produttori ad assumere bambini"], ans:0 },
+  { sdg:17, q:"Cosa è necessario fare per raggiungere i diciassette Obiettivi per lo Sviluppo Sostenibile?", opts:["Coinvolgere tutti i Paesi","I Paesi industrializzati devono portare avanti il cambiamento","I Paesi in via di sviluppo devono portare avanti il cambiamento"], ans:0 },
+  { sdg:17, q:"In che modo è stata resa più facile la comunicazione tra partner?", opts:["Attraverso piccioni viaggiatori","Attraverso internet","Attraverso messaggi in bottiglia"], ans:1 },
+  { sdg:17, q:"Chi dovrebbe essere coinvolto nella partnership per raggiungere i diciassette SDGs?", opts:["Solo i Cittadini","Solo i Governi","Solo le Aziende","Tutti: cittadini, governi e aziende"], ans:3 },
+  { sdg:17, q:"Chi deve prendersi cura del pianeta?", opts:["Gli scienziati","Le persone famose","I governi","Tutti"], ans:3 },
+];
+
+// ======= STATE =======
+let currentQuestions = [];
+let currentIndex = 0;
+let score = 0;
+let sdgScores = {}; // { sdgN: {correct, total} }
+let quizSettings = { count: 10, filter: 'all' };
+let qCount = 10;
+let sdgFilterSetting = 'all';
+
+// ======= STARS =======
+function createStars() {
+  const c = document.getElementById('stars');
+  for (let i = 0; i < 80; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const sz = Math.random() * 2.5 + 1;
+    s.style.cssText = `width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${2+Math.random()*4}s;animation-delay:${Math.random()*5}s`;
+    c.appendChild(s);
+  }
+}
+
+// ======= SCREENS =======
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 'explorer') buildExplorer();
+}
+
+// ======= EXPLORER =======
+function buildExplorer() {
+  const grid = document.getElementById('sdgGrid');
+  grid.innerHTML = '';
+  SDGs.forEach(sdg => {
+    const el = document.createElement('div');
+    el.className = 'sdg-hex';
+    el.style.background = sdg.color;
+    el.innerHTML = `<span class="sdg-num">${sdg.n}</span><span class="sdg-icon">${sdg.icon}</span><span class="sdg-label">${sdg.name.toUpperCase()}</span>`;
+    el.onclick = () => showSDGDetail(sdg);
+    grid.appendChild(el);
+  });
+}
+
+function showSDGDetail(sdg) {
+  const d = document.getElementById('sdgDetail');
+  document.getElementById('detailNum').textContent = sdg.icon + ' ' + sdg.n;
+  document.getElementById('detailNum').style.color = sdg.color;
+  document.getElementById('detailName').textContent = sdg.name;
+  document.getElementById('detailName').style.color = sdg.color;
+  document.getElementById('detailDesc').textContent = sdg.desc;
+  d.style.borderColor = sdg.color + '44';
+  d.classList.add('visible');
+}
+
+// ======= QUIZ SETUP =======
+let selectedQCount = '10';
+let selectedSDGFilter = 'all';
+
+function startQuizSetup() {
+  showScreen('quizSetup');
+}
+
+function selectChip(el, group) {
+  const parent = el.parentElement;
+  parent.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  if (group === 'qCount') selectedQCount = el.dataset.val;
+  if (group === 'sdgFilter') selectedSDGFilter = el.dataset.val;
+}
+
+function launchQuiz() {
+  let pool = [...ALL_QUESTIONS];
+  if (selectedSDGFilter === '1-9') pool = pool.filter(q => q.sdg <= 9);
+  if (selectedSDGFilter === '10-17') pool = pool.filter(q => q.sdg >= 10);
+
+  pool = shuffle(pool);
+  const n = selectedQCount === '999' ? pool.length : Math.min(parseInt(selectedQCount), pool.length);
+  currentQuestions = pool.slice(0, n);
+  startQuiz(currentQuestions);
+}
+
+function startFullQuiz() {
+  selectedQCount = '999';
+  selectedSDGFilter = 'all';
+  currentQuestions = shuffle([...ALL_QUESTIONS]);
+  startQuiz(currentQuestions);
+}
+
+function startQuiz(questions) {
+  currentIndex = 0;
+  score = 0;
+  sdgScores = {};
+  SDGs.forEach(s => sdgScores[s.n] = {correct:0, total:0});
+  showScreen('quiz');
+  buildDots();
+  renderQuestion();
+}
+
+// ======= QUIZ LOGIC =======
+function buildDots() {
+  const c = document.getElementById('sdgDots');
+  c.innerHTML = '';
+  const usedSDGs = [...new Set(currentQuestions.map(q=>q.sdg))].sort((a,b)=>a-b);
+  usedSDGs.forEach(n => {
+    const dot = document.createElement('div');
+    dot.className = 'sdg-dot';
+    dot.id = `dot-${n}`;
+    dot.style.background = SDGs[n-1].color;
+    dot.title = `SDG ${n}`;
+    c.appendChild(dot);
+  });
+}
+
+function renderQuestion() {
+  if (currentIndex >= currentQuestions.length) { showResults(); return; }
+
+  const q = currentQuestions[currentIndex];
+  const sdg = SDGs[q.sdg - 1];
+
+  // Update header
+  const badge = document.getElementById('quizBadge');
+  badge.style.background = sdg.color;
+  document.getElementById('badgeNum').textContent = q.sdg;
+  document.getElementById('badgeIcon').textContent = sdg.icon;
+
+  document.getElementById('qProgress').textContent = `Domanda ${currentIndex+1} di ${currentQuestions.length}`;
+  const pct = (currentIndex / currentQuestions.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('scoreDisplay').textContent = `⭐ ${score}`;
+
+  // Question card
+  document.getElementById('questionCard').style.setProperty('--sdg-color', sdg.color);
+  document.getElementById('sdgTag').textContent = `SDG ${q.sdg} — ${sdg.name.toUpperCase()}`;
+  document.getElementById('questionText').textContent = q.q;
+
+  // Options
+  const grid = document.getElementById('optionsGrid');
+  grid.innerHTML = '';
+  const letters = ['A','B','C','D','E'];
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span class="option-letter">${letters[i]}</span>${opt}`;
+    btn.onclick = () => selectAnswer(i, q.ans, sdg);
+    grid.appendChild(btn);
+  });
+
+  document.getElementById('feedbackBox').classList.remove('show');
+  document.getElementById('feedbackBox').className = 'feedback-box';
+  document.getElementById('nextBtn').classList.remove('show');
+
+  // Mark dot
+  document.querySelectorAll('.sdg-dot').forEach(d => d.style.transform = 'scale(1)');
+  const dot = document.getElementById(`dot-${q.sdg}`);
+  if (dot) { dot.classList.add('answered'); dot.style.transform = 'scale(1.4)'; }
+
+  // Animate card
+  const card = document.getElementById('questionCard');
+  card.style.animation = 'none';
+  void card.offsetWidth;
+  card.style.animation = 'fadeSlideUp 0.4s ease';
+}
+
+function selectAnswer(chosen, correct, sdg) {
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(b => b.disabled = true);
+
+  const isCorrect = chosen === correct;
+  btns[chosen].classList.add(isCorrect ? 'correct' : 'wrong');
+  if (!isCorrect) btns[correct].classList.add('correct');
+
+  const q = currentQuestions[currentIndex];
+  sdgScores[q.sdg].total++;
+  if (isCorrect) { score++; sdgScores[q.sdg].correct++; }
+
+  // Feedback
+  const fb = document.getElementById('feedbackBox');
+  fb.className = 'feedback-box show ' + (isCorrect ? 'correct-fb' : 'wrong-fb');
+  fb.innerHTML = isCorrect
+    ? `✅ Corretto! +1 punto`
+    : `❌ Risposta sbagliata. La risposta giusta era: "${btns[correct].textContent.trim()}"`;
+
+  document.getElementById('nextBtn').classList.add('show');
+  document.getElementById('nextBtn').textContent = currentIndex < currentQuestions.length - 1 ? 'Prossima domanda →' : 'Vedi i risultati! 🏆';
+}
+
+function nextQuestion() {
+  currentIndex++;
+  renderQuestion();
+}
+
+// ======= RESULTS =======
+function showResults() {
+  showScreen('results');
+  const total = currentQuestions.length;
+  const pct = Math.round((score/total)*100);
+
+  document.getElementById('resultScore').textContent = score;
+  document.getElementById('resultTotal').textContent = `/ ${total}`;
+
+  // Animate circle
+  const circumference = 439.8;
+  const offset = circumference - (pct/100)*circumference;
+  setTimeout(() => {
+    document.getElementById('scoreCircle').style.strokeDashoffset = offset;
+    document.getElementById('scoreCircle').style.transition = 'stroke-dashoffset 1.5s ease';
+  }, 300);
+
+  // Message
+  let msg, sub;
+  if (pct >= 90) { msg = "🏆 Esperto degli SDGs!"; sub = "Straordinario! Conosci gli Obiettivi per lo Sviluppo Sostenibile come un vero campione. Il mondo ha bisogno di persone come te!"; }
+  else if (pct >= 70) { msg = "🌟 Ottimo lavoro!"; sub = "Hai una buona conoscenza degli SDGs! Continua a imparare e a fare la tua parte per un mondo migliore."; }
+  else if (pct >= 50) { msg = "📚 Buon inizio!"; sub = "Stai imparando! Esplora ancora gli obiettivi e riprova il quiz per migliorare il tuo punteggio."; }
+  else { msg = "🌱 Continua a studiare!"; sub = "Non mollare! Usa la sezione 'Esplora' per conoscere meglio i 17 obiettivi e poi ritenta la sfida."; }
+
+  document.getElementById('resultMessage').textContent = msg;
+  document.getElementById('resultSub').textContent = sub;
+
+  // Breakdown
+  const rows = document.getElementById('breakdownRows');
+  rows.innerHTML = '';
+  const usedSDGs = [...new Set(currentQuestions.map(q=>q.sdg))].sort((a,b)=>a-b);
+  usedSDGs.forEach(n => {
+    const s = sdgScores[n];
+    if (!s.total) return;
+    const sdg = SDGs[n-1];
+    const p = Math.round((s.correct/s.total)*100);
+    const row = document.createElement('div');
+    row.className = 'sdg-result-row';
+    row.innerHTML = `
+      <div class="mini-badge" style="background:${sdg.color}">${n}</div>
+      <div class="sdg-result-bar"><div class="sdg-result-fill" style="background:${sdg.color};width:0%" data-w="${p}"></div></div>
+      <div class="sdg-result-pct">${s.correct}/${s.total}</div>
+    `;
+    rows.appendChild(row);
+  });
+  setTimeout(() => {
+    document.querySelectorAll('.sdg-result-fill').forEach(el => {
+      el.style.transition = 'width 0.8s ease';
+      el.style.width = el.dataset.w + '%';
+    });
+  }, 400);
+
+  if (pct >= 80) launchConfetti();
+}
+
+// ======= UTILS =======
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function launchConfetti() {
+  const colors = ['#FFD700','#44d9a0','#26bde2','#ff3a21','#56c02b','#fcc30b','#0a97d9'];
+  for (let i = 0; i < 60; i++) {
+    setTimeout(() => {
+      const c = document.createElement('div');
+      c.className = 'confetti-piece';
+      const size = 8 + Math.random() * 8;
+      c.style.cssText = `
+        left:${10+Math.random()*80}%;
+        width:${size}px; height:${size}px;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        border-radius:${Math.random()>0.5?'50%':'2px'};
+        --d:${1.5+Math.random()*2}s;
+        animation-delay:${Math.random()*0.5}s;
+      `;
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 3000);
+    }, i * 50);
+  }
+}
+
+// ======= INIT =======
+createStars();
+buildExplorer();
+</script>
+</body>
+</html>

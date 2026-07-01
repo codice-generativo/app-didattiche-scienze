@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoQuest – Esploratore di Rocce e Minerali</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@400;600;700&family=Verdana&display=swap');
+
+  :root {
+    --bg-deep:    #0d1b0f;
+    --bg-mid:     #142418;
+    --bg-light:   #1e3826;
+    --rock-brown: #6b4226;
+    --rock-tan:   #a0724d;
+    --mineral-gold: #c8a84b;
+    --crystal-teal: #3dd6c4;
+    --crystal-blue: #5ba4cf;
+    --lava-red:   #c0392b;
+    --lava-orange:#e67e22;
+    --text-main:  #eae6d8;
+    --text-dim:   #9a9080;
+    --correct:    #2ecc71;
+    --wrong:      #e74c3c;
+    --border:     #3a5a3e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Verdana', Geneva, sans-serif;
+    background: var(--bg-deep);
+    color: var(--text-main);
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(ellipse at 15% 20%, rgba(58,90,62,0.3) 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 80%, rgba(107,66,38,0.2) 0%, transparent 45%),
+      url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M50 50c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10zm-20 0c0-2.8 1.2-5.2 3-7L14 24l-7 7 19 19c-1 1.4-1.5 3.1-1.5 5 0 5.5 4.5 10 10 10s10-4.5 10-10zM16 8L2 22l7 7 14-14-7-7zm36 0l-7 7 14 14 7-7-14-14z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* ===== STONE TEXTURE OVERLAY ===== */
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events:none; z-index:0;
+  }
+
+  /* ===== SCREENS ===== */
+  .screen { display:none; position:relative; z-index:1; }
+  .screen.active { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:24px; }
+
+  /* ===== TITLE SCREEN ===== */
+  #screen-title { text-align:center; }
+
+  .compass-ring {
+    width:160px; height:160px;
+    border:4px solid var(--mineral-gold);
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
+    margin:0 auto 24px;
+    box-shadow: 0 0 40px rgba(200,168,75,0.25), inset 0 0 30px rgba(200,168,75,0.08);
+    animation: compassRotate 20s linear infinite;
+  }
+  .compass-ring::before {
+    content:'';
+    position:absolute; inset:-12px;
+    border:2px dashed rgba(200,168,75,0.3);
+    border-radius:50%;
+  }
+  @keyframes compassRotate { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  .compass-inner {
+    font-size:70px; line-height:1;
+    animation: compassRotate 20s linear infinite reverse;
+  }
+
+  h1.game-title {
+    font-family:'Cinzel Decorative', serif;
+    font-size:clamp(28px, 5vw, 52px);
+    color: var(--mineral-gold);
+    text-shadow: 0 0 30px rgba(200,168,75,0.5), 2px 2px 0 #3a2800;
+    letter-spacing:4px;
+    margin-bottom:6px;
+  }
+  .game-subtitle {
+    font-family:'Cinzel', serif;
+    font-size:14px;
+    letter-spacing:6px;
+    color: var(--crystal-teal);
+    text-transform:uppercase;
+    margin-bottom:36px;
+  }
+
+  /* Level cards */
+  .level-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; width:100%; max-width:700px; margin-bottom:32px; }
+  .level-card {
+    border:2px solid var(--border);
+    border-radius:12px;
+    padding:20px 16px;
+    background:rgba(30,56,38,0.5);
+    cursor:pointer;
+    transition:all 0.3s;
+    position:relative;
+    overflow:hidden;
+    text-align:center;
+    backdrop-filter:blur(6px);
+  }
+  .level-card::before {
+    content:'';
+    position:absolute; inset:0;
+    background:linear-gradient(135deg, transparent 60%, rgba(200,168,75,0.08) 100%);
+    opacity:0; transition:opacity 0.3s;
+  }
+  .level-card:hover { border-color:var(--mineral-gold); transform:translateY(-4px); box-shadow:0 8px 24px rgba(0,0,0,0.4); }
+  .level-card:hover::before { opacity:1; }
+  .level-card.selected { border-color:var(--crystal-teal); background:rgba(61,214,196,0.1); }
+  .level-icon { font-size:36px; margin-bottom:8px; display:block; }
+  .level-name { font-family:'Cinzel', serif; font-size:15px; color:var(--mineral-gold); font-weight:600; margin-bottom:4px; }
+  .level-desc { font-size:12px; color:var(--text-dim); line-height:1.5; }
+  .level-badge { position:absolute; top:8px; right:8px; background:var(--rock-brown); color:var(--text-main); font-size:10px; padding:2px 8px; border-radius:20px; font-family:'Cinzel',serif; }
+
+  .btn-start {
+    font-family:'Cinzel', serif;
+    font-size:18px;
+    letter-spacing:3px;
+    padding:16px 48px;
+    background:linear-gradient(135deg, var(--rock-brown), var(--mineral-gold));
+    border:none; border-radius:8px;
+    color:#1a0e00;
+    cursor:pointer;
+    font-weight:700;
+    transition:all 0.3s;
+    box-shadow:0 4px 20px rgba(200,168,75,0.3);
+    text-transform:uppercase;
+  }
+  .btn-start:hover { transform:scale(1.05); box-shadow:0 6px 30px rgba(200,168,75,0.5); }
+  .btn-start:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+
+  /* ===== GAME HUD ===== */
+  #screen-game { padding:16px; justify-content:flex-start; }
+
+  .hud {
+    width:100%; max-width:800px;
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:8px;
+    margin-bottom:20px;
+    padding:12px 20px;
+    background:rgba(20,36,24,0.8);
+    border:1px solid var(--border);
+    border-radius:12px;
+    backdrop-filter:blur(8px);
+  }
+  .hud-item { display:flex; flex-direction:column; align-items:center; }
+  .hud-label { font-family:'Cinzel', serif; font-size:10px; letter-spacing:2px; color:var(--text-dim); text-transform:uppercase; }
+  .hud-value { font-family:'Cinzel', serif; font-size:20px; font-weight:700; color:var(--mineral-gold); }
+  .hud-category { font-family:'Cinzel', serif; font-size:12px; color:var(--crystal-teal); }
+
+  .progress-bar-wrap { width:100%; max-width:800px; height:6px; background:rgba(255,255,255,0.08); border-radius:3px; margin-bottom:20px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:linear-gradient(90deg, var(--crystal-teal), var(--mineral-gold)); border-radius:3px; transition:width 0.5s ease; }
+
+  /* ===== QUESTION CARD ===== */
+  .question-card {
+    width:100%; max-width:800px;
+    background:rgba(20,36,24,0.85);
+    border:2px solid var(--border);
+    border-radius:16px;
+    padding:28px 32px;
+    backdrop-filter:blur(10px);
+    position:relative;
+    overflow:hidden;
+  }
+  .question-card::after {
+    content:'';
+    position:absolute; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg, var(--crystal-teal), var(--mineral-gold), var(--lava-orange));
+  }
+
+  .q-category-tag {
+    display:inline-block;
+    font-family:'Cinzel', serif;
+    font-size:11px;
+    letter-spacing:2px;
+    padding:4px 14px;
+    border-radius:20px;
+    margin-bottom:16px;
+    text-transform:uppercase;
+  }
+  .tag-minerali { background:rgba(61,214,196,0.15); color:var(--crystal-teal); border:1px solid rgba(61,214,196,0.3); }
+  .tag-rocce { background:rgba(200,168,75,0.15); color:var(--mineral-gold); border:1px solid rgba(200,168,75,0.3); }
+  .tag-magmatiche { background:rgba(192,57,43,0.15); color:#e88; border:1px solid rgba(192,57,43,0.3); }
+  .tag-sedimentarie { background:rgba(160,114,77,0.15); color:var(--rock-tan); border:1px solid rgba(160,114,77,0.3); }
+  .tag-metamorfiche { background:rgba(91,164,207,0.15); color:var(--crystal-blue); border:1px solid rgba(91,164,207,0.3); }
+
+  .question-text {
+    font-family: Verdana, Geneva, sans-serif;
+    font-size: 18px;
+    line-height: 1.65;
+    color: var(--text-main);
+    margin-bottom: 28px;
+    font-weight: normal;
+  }
+
+  .options-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media(max-width:560px){ .options-grid { grid-template-columns:1fr; } }
+
+  .option-btn {
+    font-family: Verdana, Geneva, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    padding: 14px 18px;
+    background: rgba(14,26,16,0.7);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-main);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .option-btn::before {
+    content: attr(data-letter);
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--mineral-gold);
+    opacity: 0.7;
+  }
+  .option-btn { padding-left: 36px; }
+  .option-btn:hover:not(:disabled) { border-color:var(--mineral-gold); background:rgba(200,168,75,0.1); transform:translateX(4px); }
+  .option-btn.correct { border-color:var(--correct)!important; background:rgba(46,204,113,0.15)!important; color:var(--correct); }
+  .option-btn.wrong   { border-color:var(--wrong)!important; background:rgba(231,76,60,0.15)!important; color:var(--wrong); }
+  .option-btn:disabled { cursor:default; }
+
+  /* Feedback banner */
+  .feedback-banner {
+    margin-top:16px; padding:14px 18px;
+    border-radius:10px;
+    font-family: Verdana, Geneva, sans-serif;
+    font-size:15px;
+    line-height:1.5;
+    display:none;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+  .feedback-correct { background:rgba(46,204,113,0.12); border:1px solid var(--correct); color:var(--correct); }
+  .feedback-wrong   { background:rgba(231,76,60,0.12);  border:1px solid var(--wrong);  color:var(--wrong); }
+
+  .btn-next {
+    font-family:'Cinzel', serif;
+    font-size:14px; letter-spacing:2px;
+    margin-top:20px;
+    padding:12px 32px;
+    background:var(--bg-mid);
+    border:2px solid var(--mineral-gold);
+    border-radius:8px;
+    color:var(--mineral-gold);
+    cursor:pointer;
+    text-transform:uppercase;
+    transition:all 0.3s;
+    display:none;
+  }
+  .btn-next:hover { background:var(--mineral-gold); color:var(--bg-deep); }
+
+  /* ===== RESULTS SCREEN ===== */
+  #screen-results { text-align:center; }
+  .results-trophy { font-size:72px; margin-bottom:16px; animation: bounceIn 0.6s ease; }
+  @keyframes bounceIn { 0%{transform:scale(0)} 60%{transform:scale(1.2)} 100%{transform:scale(1)} }
+
+  .results-title { font-family:'Cinzel Decorative', serif; font-size:32px; color:var(--mineral-gold); margin-bottom:8px; }
+  .results-subtitle { font-family:'Cinzel', serif; font-size:14px; letter-spacing:4px; color:var(--crystal-teal); margin-bottom:32px; }
+
+  .score-ring {
+    width:160px; height:160px;
+    border-radius:50%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    border:6px solid var(--mineral-gold);
+    margin:0 auto 32px;
+    box-shadow:0 0 40px rgba(200,168,75,0.3);
+    background:rgba(20,36,24,0.8);
+  }
+  .score-pct { font-family:'Cinzel Decorative', serif; font-size:36px; color:var(--mineral-gold); }
+  .score-label { font-family:'Cinzel', serif; font-size:11px; letter-spacing:2px; color:var(--text-dim); }
+
+  .stats-grid { display:flex; gap:24px; justify-content:center; flex-wrap:wrap; margin-bottom:32px; }
+  .stat-box { background:rgba(30,56,38,0.6); border:1px solid var(--border); border-radius:10px; padding:16px 24px; text-align:center; }
+  .stat-num { font-family:'Cinzel', serif; font-size:28px; color:var(--mineral-gold); }
+  .stat-lbl { font-family:'Cinzel', serif; font-size:11px; letter-spacing:2px; color:var(--text-dim); text-transform:uppercase; }
+
+  .rank-badge {
+    display:inline-block;
+    font-family:'Cinzel', serif; font-size:16px; letter-spacing:2px;
+    padding:10px 28px;
+    border-radius:24px;
+    margin-bottom:32px;
+  }
+
+  .btn-group { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+  .btn-secondary {
+    font-family:'Cinzel', serif; font-size:13px; letter-spacing:2px;
+    padding:12px 28px;
+    background:transparent;
+    border:2px solid var(--border);
+    border-radius:8px; color:var(--text-dim);
+    cursor:pointer; text-transform:uppercase;
+    transition:all 0.3s;
+  }
+  .btn-secondary:hover { border-color:var(--text-main); color:var(--text-main); }
+
+  /* ===== CRYSTAL DECORATIONS ===== */
+  .crystal-deco {
+    position:fixed; pointer-events:none; z-index:0; opacity:0.15;
+    font-size:clamp(40px, 6vw, 80px);
+  }
+  .crystal-deco.c1 { top:8%; left:3%;  transform:rotate(-20deg); }
+  .crystal-deco.c2 { top:15%; right:4%; transform:rotate(15deg); }
+  .crystal-deco.c3 { bottom:10%; left:5%; transform:rotate(10deg); }
+  .crystal-deco.c4 { bottom:8%;  right:3%; transform:rotate(-12deg); }
+
+  /* ===== PARTICLE BURST ===== */
+  .particle { position:fixed; pointer-events:none; z-index:100; font-size:20px; animation:particleFly 1s ease-out forwards; }
+  @keyframes particleFly {
+    0%   { transform:translate(0,0) scale(1); opacity:1; }
+    100% { transform:translate(var(--dx),var(--dy)) scale(0); opacity:0; }
+  }
+
+  /* ===== TIMER BAR ===== */
+  .timer-bar-wrap { width:100%; max-width:800px; height:4px; background:rgba(255,255,255,0.06); border-radius:2px; margin-bottom:12px; overflow:hidden; }
+  .timer-bar-fill { height:100%; background:var(--crystal-teal); border-radius:2px; transition:width 0.1s linear; }
+
+  /* ===== MUSIC TOGGLE ===== */
+  .music-btn {
+    position:fixed; top:16px; right:16px; z-index:200;
+    background:rgba(20,36,24,0.9); border:1px solid var(--border);
+    border-radius:50%; width:40px; height:40px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; font-size:18px;
+    transition:all 0.3s;
+    color:var(--text-dim);
+  }
+  .music-btn:hover { border-color:var(--mineral-gold); color:var(--mineral-gold); }
+
+  /* Responsive */
+  @media(max-width:600px){
+    .question-text { font-size:17px; }
+    .option-btn { font-size:15px; }
+    .hud { padding:10px 14px; gap:6px; }
+    .hud-value { font-size:16px; }
+    .question-card { padding:20px 16px; }
+  }
+
+  /* Shake animation for wrong answer */
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(6px)} }
+  .shake { animation:shake 0.4s ease; }
+
+  /* Glow pulse for correct */
+  @keyframes glowPulse { 0%,100%{box-shadow:0 0 0 rgba(46,204,113,0)} 50%{box-shadow:0 0 30px rgba(46,204,113,0.4)} }
+  .glow-correct { animation:glowPulse 0.6s ease; }
+</style>
+</head>
+<body>
+
+<!-- Crystal decorations -->
+<div class="crystal-deco c1">💎</div>
+<div class="crystal-deco c2">🪨</div>
+<div class="crystal-deco c3">⛏️</div>
+<div class="crystal-deco c4">🔬</div>
+
+<!-- Music toggle -->
+<button class="music-btn" id="musicBtn" title="Musica on/off">🎵</button>
+
+<!-- ===== TITLE SCREEN ===== -->
+<div id="screen-title" class="screen active">
+  <div class="compass-ring"><span class="compass-inner">🧭</span></div>
+  <h1 class="game-title">GeoQuest</h1>
+  <p class="game-subtitle">Esploratore di Rocce & Minerali</p>
+
+  <p style="font-family:'Cinzel',serif; font-size:13px; letter-spacing:2px; color:var(--text-dim); margin-bottom:24px;">SCEGLI IL LIVELLO DI ESPLORAZIONE</p>
+
+  <div class="level-grid">
+    <div class="level-card" data-level="1" onclick="selectLevel(1)">
+      <span class="level-badge">LV 1</span>
+      <span class="level-icon">🌱</span>
+      <div class="level-name">Raccoglitore</div>
+      <div class="level-desc">Concetti fondamentali. Domande semplici con risposte intuitive.</div>
+    </div>
+    <div class="level-card" data-level="2" onclick="selectLevel(2)">
+      <span class="level-badge">LV 2</span>
+      <span class="level-icon">⚒️</span>
+      <div class="level-name">Geologo</div>
+      <div class="level-desc">Proprietà dei minerali e classificazione delle rocce. Livello medio.</div>
+    </div>
+    <div class="level-card" data-level="3" onclick="selectLevel(3)">
+      <span class="level-badge">LV 3</span>
+      <span class="level-icon">🔬</span>
+      <div class="level-name">Mineralogista</div>
+      <div class="level-desc">Dettagli scientifici avanzati. Tutte le categorie. Solo per esperti!</div>
+    </div>
+  </div>
+
+  <button class="btn-start" id="btnStart" onclick="startGame()" disabled>
+    ⛏️ &nbsp; Inizia l'Esplorazione
+  </button>
+</div>
+
+<!-- ===== GAME SCREEN ===== -->
+<div id="screen-game" class="screen">
+  <div class="hud">
+    <div class="hud-item">
+      <span class="hud-label">Domanda</span>
+      <span class="hud-value" id="hudQ">1/15</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Punteggio</span>
+      <span class="hud-value" id="hudScore">0</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Serie</span>
+      <span class="hud-value" id="hudStreak">0🔥</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-value" id="hudLevel" style="font-size:13px; color:var(--text-dim);">LV 1 – Raccoglitore</span>
+    </div>
+  </div>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+  </div>
+
+  <div class="timer-bar-wrap">
+    <div class="timer-bar-fill" id="timerFill" style="width:100%"></div>
+  </div>
+
+  <div class="question-card" id="questionCard">
+    <span class="q-category-tag" id="qTag">Minerali</span>
+    <p class="question-text" id="questionText">Caricamento...</p>
+    <div class="options-grid" id="optionsGrid"></div>
+    <div class="feedback-banner" id="feedbackBanner"></div>
+    <button class="btn-next" id="btnNext" onclick="nextQuestion()">Prossima Domanda →</button>
+  </div>
+</div>
+
+<!-- ===== RESULTS SCREEN ===== -->
+<div id="screen-results" class="screen">
+  <div class="results-trophy" id="resultsTrophy">🏆</div>
+  <h2 class="results-title" id="resultsTitle">Missione Completata!</h2>
+  <p class="results-subtitle" id="resultsSubtitle">ESPLORATORE DELLA TERRA</p>
+
+  <div class="score-ring">
+    <span class="score-pct" id="resultsPct">0%</span>
+    <span class="score-label">ACCURATEZZA</span>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-box">
+      <div class="stat-num" id="statsCorrect">0</div>
+      <div class="stat-lbl">Corrette</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="statsWrong">0</div>
+      <div class="stat-lbl">Errate</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="statsScore">0</div>
+      <div class="stat-lbl">Punteggio</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="statsBestStreak">0</div>
+      <div class="stat-lbl">Serie Max</div>
+    </div>
+  </div>
+
+  <div class="rank-badge" id="rankBadge">⭐ Geologo Principiante</div>
+
+  <div class="btn-group">
+    <button class="btn-start" onclick="restartSameLevel()">↺ Rigioca</button>
+    <button class="btn-secondary" onclick="goToMenu()">Menu Principale</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  AUDIO ENGINE  (Web Audio API – no file deps)
+// ============================================================
+let AC = null;
+let musicOn = true;
+let bgGainNode = null, bgOscillators = [];
+
+function getAC() {
+  if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+  return AC;
+}
+
+function playTone(freq, type='sine', dur=0.3, vol=0.15, delay=0) {
+  try {
+    const ac = getAC();
+    if (ac.state === 'suspended') ac.resume();
+    const osc  = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.connect(gain); gain.connect(ac.destination);
+    osc.type = type; osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, ac.currentTime + delay);
+    gain.gain.linearRampToValueAtTime(vol, ac.currentTime + delay + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + delay + dur);
+    osc.start(ac.currentTime + delay);
+    osc.stop(ac.currentTime + delay + dur + 0.05);
+  } catch(e) { /* audio not available */ }
+}
+
+function playCorrectSound() {
+  // Victory fanfare
+  const notes = [523.25, 659.25, 783.99, 1046.50];
+  notes.forEach((f, i) => playTone(f, 'sine', 0.25, 0.18, i*0.09));
+  playTone(1046.50, 'triangle', 0.4, 0.12, 0.36);
+}
+
+function playWrongSound() {
+  playTone(220, 'sawtooth', 0.2, 0.15);
+  playTone(196, 'sawtooth', 0.25, 0.1, 0.1);
+}
+
+function playClickSound() {
+  playTone(800, 'sine', 0.05, 0.08);
+}
+
+// Background ambient music (pentatonic drone)
+function startBgMusic() {
+  if (!musicOn) return;
+  stopBgMusic();
+  try {
+    const ac = getAC();
+    if (ac.state === 'suspended') ac.resume();
+    bgGainNode = ac.createGain();
+    bgGainNode.gain.value = 0.04;
+    bgGainNode.connect(ac.destination);
+
+  const baseNotes = [110, 146.83, 164.81, 196, 220, 246.94, 293.66];
+  function scheduleNote() {
+    if (!musicOn || !bgGainNode) return;
+    try {
+      const ac2 = getAC();
+      const freq = baseNotes[Math.floor(Math.random()*baseNotes.length)];
+      const osc = ac2.createOscillator();
+      osc.type = ['sine','triangle','sine'][Math.floor(Math.random()*3)];
+      osc.frequency.value = freq * (Math.random() > 0.7 ? 2 : 1);
+      const g = ac2.createGain();
+      g.gain.setValueAtTime(0, ac2.currentTime);
+      g.gain.linearRampToValueAtTime(0.06, ac2.currentTime + 0.5);
+      g.gain.linearRampToValueAtTime(0, ac2.currentTime + 3.5);
+      osc.connect(g);
+      if (bgGainNode) g.connect(bgGainNode);
+      osc.start(ac2.currentTime); osc.stop(ac2.currentTime + 4);
+      bgOscillators.push(osc);
+    } catch(e) { /* ignore */ }
+    setTimeout(scheduleNote, 1800 + Math.random()*2000);
+  }
+  scheduleNote();
+  } catch(e) { /* audio not available */ }
+}
+
+function stopBgMusic() {
+  bgOscillators.forEach(o => { try { o.stop(); } catch(e){} });
+  bgOscillators = [];
+  if (bgGainNode) { bgGainNode.disconnect(); bgGainNode = null; }
+}
+
+document.getElementById('musicBtn').addEventListener('click', () => {
+  const ac = getAC();
+  if (ac.state === 'suspended') ac.resume();
+  musicOn = !musicOn;
+  document.getElementById('musicBtn').textContent = musicOn ? '🎵' : '🔇';
+  musicOn ? startBgMusic() : stopBgMusic();
+});
+
+// ============================================================
+//  QUESTION DATABASE
+// ============================================================
+const allQuestions = [
+  // === CATEGORIA: MINERALI (fondamentali) ===
+  {
+    cat:'minerali', level:1,
+    q:"Che cosa sono i minerali?",
+    opts:["Sostanze solide inorganiche con composizione chimica determinata e struttura cristallina","Rocce formate da frammenti di altri minerali","Qualsiasi solido presente nella crosta terrestre","Composti organici prodotti da organismi viventi"],
+    ans:0,
+    exp:"I minerali sono sostanze solide inorganiche aventi una composizione chimica ben determinata e in genere una specifica struttura cristallina."
+  },
+  {
+    cat:'minerali', level:1,
+    q:"Cosa sono le rocce?",
+    opts:["Minerali allo stato puro","Aggregati di minerali","Cristalli di grandi dimensioni","Sedimenti compattati"],
+    ans:1,
+    exp:"Le rocce sono aggregati di minerali, cioè insiemi di più minerali legati tra loro."
+  },
+  {
+    cat:'minerali', level:1,
+    q:"Quale minerale è il più duro nella Scala di Mohs?",
+    opts:["Quarzo","Feldspato","Diamante","Corindone"],
+    ans:2,
+    exp:"Il diamante ha durezza 10 nella scala di Mohs, il valore massimo. È il materiale naturale più duro conosciuto."
+  },
+  {
+    cat:'minerali', level:1,
+    q:"Qual è il minerale più tenero nella Scala di Mohs (durezza 1)?",
+    opts:["Gesso","Fluorite","Calcite","Talco"],
+    ans:3,
+    exp:"Il talco ha durezza 1, il valore più basso nella scala di Mohs. È talmente tenero da essere scalfito con l'unghia."
+  },
+  {
+    cat:'minerali', level:1,
+    q:"Quarzo e salgemma si possono distinguere tramite:",
+    opts:["Il colore soltanto","Densità, solubilità e durezza","La forma dei cristalli soltanto","La provenienza geografica"],
+    ans:1,
+    exp:"Quarzo (denso 2,6 g/cm³, insolubile, duro) e salgemma (denso 2,1 g/cm³, solubile, più tenero) si distinguono per densità, solubilità e durezza."
+  },
+  {
+    cat:'minerali', level:1,
+    q:"Quale proprietà descrive la tendenza di un minerale a rompersi lungo piani prestabiliti?",
+    opts:["Durezza","Sfaldatura","Solubilità","Densità"],
+    ans:1,
+    exp:"La sfaldatura è la proprietà per cui i cristalli, se percossi, si rompono secondo piani ben determinati dove le forze di legame nel reticolo cristallino sono minori."
+  },
+  {
+    cat:'minerali', level:2,
+    q:"In base alla composizione chimica, i minerali si dividono principalmente in:",
+    opts:["Carbonati e ossidi","Silicati e non silicati","Organici e inorganici","Cristallini e amorfi"],
+    ans:1,
+    exp:"I minerali si classificano in silicati (costituiti prevalentemente da silicio e ossigeno) e non silicati (carbonati, ossidi, solfuri, solfati)."
+  },
+  {
+    cat:'minerali', level:2,
+    q:"Diamante e grafite sono entrambi formati da atomi di carbonio. Come si chiamano minerali con uguale composizione ma diversa struttura cristallina?",
+    opts:["Isomeri","Polimorfi","Allotropi minerali","Varietà cristalline"],
+    ans:1,
+    exp:"Il polimorfismo si verifica quando, in presenza di condizioni di formazione diverse, si originano minerali con reticoli cristallini diversi ma uguale composizione chimica."
+  },
+  {
+    cat:'minerali', level:2,
+    q:"Quale dei seguenti è un esempio di minerale non silicato?",
+    opts:["Quarzo","Feldspato","Calcite","Olivina"],
+    ans:2,
+    exp:"La calcite è un carbonato (non silicato) di calcio; forma il marmo e i calcari. Quarzo, feldspato e olivina sono invece silicati."
+  },
+  {
+    cat:'minerali', level:2,
+    q:"Quale test chimico è utile per riconoscere i carbonati?",
+    opts:["Test con acqua distillata","Test con acido cloridrico (effervescenza)","Test magnetico","Test di solubilità in olio"],
+    ans:1,
+    exp:"L'acido cloridrico reagisce con i carbonati (come la calcite) producendo una tipica effervescenza dovuta alla liberazione di CO₂."
+  },
+  {
+    cat:'minerali', level:2,
+    q:"Che cos'è il reticolo cristallino di un minerale?",
+    opts:["La forma esterna visibile del cristallo","La disposizione ordinata di atomi, ioni o molecole nelle tre dimensioni","Il colore caratteristico del minerale","La resistenza alla scalfittura"],
+    ans:1,
+    exp:"Il reticolo cristallino è la struttura interna del minerale dove atomi, ioni o molecole sono disposti in modo ordinato nelle tre dimensioni secondo una precisa geometria."
+  },
+  {
+    cat:'minerali', level:3,
+    q:"Nell'unità strutturale di base dei silicati, come è configurato il tetraedro SiO₄?",
+    opts:["Un atomo di Si circondato da 4 atomi di O ai vertici","Un atomo di O circondato da 4 atomi di Si","Due atomi di Si legati a due atomi di O","Un anello di 6 atomi di Si e O alternati"],
+    ans:0,
+    exp:"Nei silicati l'unità di base è un tetraedro: l'atomo di silicio è in posizione centrale ed è circondato da quattro atomi di ossigeno disposti ai vertici."
+  },
+  {
+    cat:'minerali', level:3,
+    q:"Perché la pirite è chiamata 'oro degli sciocchi'?",
+    opts:["Perché è inutile","Perché assomiglia all'oro ma ha maggiore densità e minore durezza","Perché si trova sempre vicino all'oro","Perché si forma più lentamente dell'oro"],
+    ans:1,
+    exp:"La pirite somiglia all'oro per il colore metallico, ma ha maggiore densità e minore durezza rispetto all'oro, oltre che ben diverso valore economico."
+  },
+  {
+    cat:'minerali', level:3,
+    q:"Quale minerale ha proprietà magnetiche, comportandosi come una calamita naturale?",
+    opts:["Ematite","Magnetite","Pirite","Galena"],
+    ans:1,
+    exp:"La magnetite è un ossido di ferro che ha proprietà magnetiche e si comporta come una calamita naturale."
+  },
+
+  // === CATEGORIA: ROCCE (fondamentali) ===
+  {
+    cat:'rocce', level:1,
+    q:"Le rocce si classificano in base a:",
+    opts:["Il loro colore","Il loro peso specifico","La loro origine geologica (modalità di formazione)","La loro età"],
+    ans:2,
+    exp:"Le rocce si classificano in base alla loro origine geologica: magmatiche (da raffreddamento magma), sedimentarie (da accumulo sedimenti) e metamorfiche (da trasformazione in profondità)."
+  },
+  {
+    cat:'rocce', level:1,
+    q:"Quali sono i tre grandi gruppi di rocce?",
+    opts:["Dure, medie, tenere","Magmatiche, sedimentarie, metamorfiche","Silicatiche, carbonatiche, ossidiche","Terrestri, marine, lacustri"],
+    ans:1,
+    exp:"Le tre categorie principali sono: rocce magmatiche (da raffreddamento magma/lava), sedimentarie (da accumulo di sedimenti) e metamorfiche (da trasformazione per calore e pressione)."
+  },
+  {
+    cat:'rocce', level:1,
+    q:"Da cosa derivano le rocce magmatiche?",
+    opts:["Dall'accumulo di sedimenti sul fondo dei mari","Dalla solidificazione di magmi o lave","Dalla trasformazione di rocce per calore e pressione","Dall'erosione delle montagne"],
+    ans:1,
+    exp:"Le rocce magmatiche o ignee derivano dalla solidificazione di masse fuse quali magmi (in profondità) o lave (in superficie)."
+  },
+  {
+    cat:'rocce', level:1,
+    q:"Quale roccia si forma dal lento raffreddamento del magma in profondità ed è la principale roccia della crosta continentale?",
+    opts:["Basalto","Marmo","Granito","Calcare"],
+    ans:2,
+    exp:"Il granito è una roccia magmatica intrusiva che si forma dal lento raffreddamento del magma in profondità. È macrocristallino e costituisce la base della crosta continentale."
+  },
+  {
+    cat:'rocce', level:1,
+    q:"Le rocce sedimentarie si formano principalmente:",
+    opts:["In profondità per alte pressioni","In superficie per accumulo e cementazione di materiali","Per raffreddamento di lava","Per fusione di rocce già esistenti"],
+    ans:1,
+    exp:"Le rocce sedimentarie si formano in superficie e provengono dall'accumulo, compattazione e consolidamento di materiali di origine diversa (frammenti rocciosi, gusci di organismi, precipitazioni chimiche)."
+  },
+  {
+    cat:'rocce', level:1,
+    q:"Il processo che trasforma i sedimenti in roccia si chiama:",
+    opts:["Metamorfismo","Vulcanismo","Litificazione","Erosione"],
+    ans:2,
+    exp:"La litificazione è il processo che trasforma i sedimenti in roccia attraverso compattazione e cementazione."
+  },
+
+  // === CATEGORIA: ROCCE MAGMATICHE ===
+  {
+    cat:'magmatiche', level:1,
+    q:"Qual è la differenza principale tra rocce magmatiche intrusive ed effusive?",
+    opts:["Le intrusive sono più scure delle effusive","Le intrusive si formano in profondità (raffreddamento lento), le effusive in superficie (raffreddamento rapido)","Le effusive contengono più minerali delle intrusive","Non c'è differenza: sono la stessa cosa"],
+    ans:1,
+    exp:"Le intrusive si formano dal raffreddamento lento del magma in profondità e sono macrocristalline (es. granito). Le effusive si formano dal rapido raffreddamento della lava in superficie e sono microcristalline (es. basalto)."
+  },
+  {
+    cat:'magmatiche', level:2,
+    q:"Perché il basalto ha cristalli molto piccoli (microcristallini)?",
+    opts:["Perché si forma in ambienti sottomarini","Perché la lava in superficie si raffredda rapidamente e i minerali non hanno tempo di crescere","Perché è povero di silicio","Perché si forma da magma molto viscoso"],
+    ans:1,
+    exp:"In superficie il raffreddamento è rapido e le particelle che costituiscono i minerali non hanno tempo sufficiente per dare origine a cristalli di grandi dimensioni. Si formano così rocce microcristalline come il basalto."
+  },
+  {
+    cat:'magmatiche', level:2,
+    q:"Le rocce magmatiche acide (come il granito) si distinguono da quelle basiche (come il basalto) per:",
+    opts:["Il contenuto di silice: >65% per le acide, <52% per le basiche","Il contenuto d'acqua: più acqua = più acido","La temperatura di formazione: più fredde = acide","La profondità: più in superficie = più acido"],
+    ans:0,
+    exp:"Le rocce acide come i graniti hanno percentuale in silice superiore al 65%; quelle basiche come i basalti l'hanno inferiore al 52%. Le acide sono più chiare e meno dense, le basiche più scure e dense."
+  },
+  {
+    cat:'magmatiche', level:2,
+    q:"Quale roccia è la principale costituente della crosta oceanica?",
+    opts:["Granito","Marmo","Basalto","Gneiss"],
+    ans:2,
+    exp:"I basalti sono i principali costituenti della crosta oceanica. I gabbri (basici, intrusivi) formano la base più profonda della crosta oceanica sotto i basalti."
+  },
+  {
+    cat:'magmatiche', level:3,
+    q:"Cos'è un batolite?",
+    opts:["Un tipo di cristallo nei minerali silicatici","Una grande massa rocciosa intrusiva che forma il 'cuore' delle catene montuose","Un vulcano sottomarino","Un tipo di eruzione effusiva"],
+    ans:1,
+    exp:"I più grandi ammassi rocciosi intrusivi che si formano all'interno della crosta terrestre si chiamano batoliti e spesso costituiscono il 'cuore' delle catene montuose."
+  },
+  {
+    cat:'magmatiche', level:3,
+    q:"Cosa sono i fenocristalli?",
+    opts:["Cristalli microscopici visibili solo al microscopio","Cristalli visibili a occhio nudo immersi in una 'pasta' di microcristalli nelle rocce effusive","Cristalli di rocce sedimentarie","Il nome scientifico dei cristalli del quarzo"],
+    ans:1,
+    exp:"I fenocristalli sono cristalli grandi visibili a occhio nudo che si trovano immersi in una pasta di microcristalli in rocce come le rioliti. Si formano in una prima fase di raffreddamento più lenta dentro la crosta."
+  },
+  {
+    cat:'magmatiche', level:3,
+    q:"L'ossidiana è una roccia effusiva acida. Perché ha aspetto vetroso e non cristallino?",
+    opts:["Perché si è formata sott'acqua","Perché il raffreddamento è stato troppo rapido per permettere la formazione di un reticolo cristallino","Perché è priva di silicio","Perché è una roccia metamorfica trasformata"],
+    ans:1,
+    exp:"L'ossidiana è amorfa: per il rapido raffreddamento, le particelle non si sono disposte in modo ordinato e il minerale non ha assunto la forma cristallina, risultando dall'aspetto vetroso."
+  },
+
+  // === CATEGORIA: ROCCE SEDIMENTARIE ===
+  {
+    cat:'sedimentarie', level:1,
+    q:"Le rocce sedimentarie si classificano in base a:",
+    opts:["La loro durezza","L'origine dei sedimenti che le compongono (clastica, chimica, organica)","Il colore","La profondità di formazione"],
+    ans:1,
+    exp:"Il criterio principale di classificazione è l'origine dei sedimenti: classtica/terrigena (frammenti rocciosi), chimica (precipitazione di sali) e organica (resti di organismi)."
+  },
+  {
+    cat:'sedimentarie', level:2,
+    q:"Come si chiama la roccia sedimentaria clastica che si forma da piccoli granuli di sabbia cementati tra loro?",
+    opts:["Conglomerato","Argillite","Arenaria","Breccia"],
+    ans:2,
+    exp:"L'arenaria si origina dalla litificazione delle sabbie, cioè da granuli con diametro inferiore a 2 mm cementati tra loro."
+  },
+  {
+    cat:'sedimentarie', level:2,
+    q:"Il salgemma è un esempio di roccia sedimentaria di origine:",
+    opts:["Clastica (frammenti rocciosi)","Organica (resti di organismi)","Chimica (precipitazione da acqua evaporata)","Metamorfica"],
+    ans:2,
+    exp:"Il salgemma è un'evaporite: si forma quando l'acqua di un mare chiuso evapora e i sali (soprattutto cloruro di sodio) precipitano sul fondo."
+  },
+  {
+    cat:'sedimentarie', level:2,
+    q:"Il calcare organogeno si forma principalmente da:",
+    opts:["Sabbie trasportate dai fiumi","Gusci e scheletri di organismi (coralli, molluschi) ricchi di carbonato di calcio","Cristalli di gesso precipitati dall'acqua marina","Frammenti vulcanici cementati"],
+    ans:1,
+    exp:"Il calcare organogeno si forma dai gusci e scheletri di coralli, spugne, molluschi e altri invertebrati ricchi di carbonato di calcio che si depositano sul fondo marino."
+  },
+  {
+    cat:'sedimentarie', level:3,
+    q:"Qual è la differenza tra una puddinga e una breccia?",
+    opts:["La puddinga ha clasti fini, la breccia clasti grossi","La puddinga ha clasti arrotondati (es. ciottoli fluviali), la breccia ha clasti spigolosi","La puddinga è di origine marina, la breccia continentale","Non c'è differenza, sono sinonimi"],
+    ans:1,
+    exp:"Entrambe sono conglomerati (clasti grossolani), ma si distinguono per la forma dei clasti: la puddinga ha clasti arrotondati (trasportati dall'acqua), la breccia ha clasti spigolosi (tipici delle frane)."
+  },
+  {
+    cat:'sedimentarie', level:3,
+    q:"Da cosa derivano i combustibili fossili come il carbone?",
+    opts:["Dal raffreddamento di magma ricco di carbonio","Dalla sedimentazione e trasformazione di materia organica vegetale in ambienti paludosi","Dall'erosione di rocce metamorfiche","Dalla cristallizzazione di sali inorganici"],
+    ans:1,
+    exp:"I carboni fossili derivano dalla sedimentazione di materia organica vegetale depositata in ambienti paludosi, che poi si è compattata progressivamente in torba → lignite → litantrace → antracite."
+  },
+
+  // === CATEGORIA: ROCCE METAMORFICHE ===
+  {
+    cat:'metamorfiche', level:1,
+    q:"Le rocce metamorfiche si formano da:",
+    opts:["Raffreddamento di magma","Accumulo di sedimenti","Rocce preesistenti trasformate da aumento di temperatura e pressione in profondità","Evaporazione dell'acqua marina"],
+    ans:2,
+    exp:"Le rocce metamorfiche derivano da rocce sedimentarie, magmatiche o da altre rocce metamorfiche che si trasformano in seguito all'aumento di pressione e temperatura per la loro 'sepoltura' in profondità."
+  },
+  {
+    cat:'metamorfiche', level:1,
+    q:"Il marmo è una roccia metamorfica che deriva dal metamorfismo del:",
+    opts:["Granito","Basalto","Calcare","Gneiss"],
+    ans:2,
+    exp:"Il marmo si forma dal metamorfismo del calcare: le alte temperature e pressioni trasformano i cristalli di calcite e cancellano i fossili originariamente presenti nel calcare."
+  },
+  {
+    cat:'metamorfiche', level:2,
+    q:"Cosa si intende per struttura 'scistosa' nelle rocce metamorfiche?",
+    opts:["Una struttura granulare e compatta","Un aspetto lamellare e foliato causato dall'orientamento parallelo dei minerali sotto pressione","Una struttura porosa simile alla pomice","La presenza di molti fossili"],
+    ans:1,
+    exp:"La struttura scistosa è un caratteristico aspetto lamellare e foliato dovuto al fatto che, nel corso del metamorfismo, le alte pressioni fanno orientare i minerali su piani paralleli perpendicolari alla direzione della forza."
+  },
+  {
+    cat:'metamorfiche', level:2,
+    q:"Perché nel marmo non si trovano fossili, mentre nel calcare organogeno sì?",
+    opts:["Perché il marmo si è formato in acque molto profonde senza organismi","Perché il metamorfismo comporta la ricristallizzazione che cancella i fossili","Perché i fossili migrano verso le rocce sedimentarie vicine","Non è vero: anche il marmo contiene fossili"],
+    ans:1,
+    exp:"Il metamorfismo comporta una ricristallizzazione allo stato solido che, nel caso di rocce di origine organica come il calcare, cancella completamente i fossili originariamente presenti."
+  },
+  {
+    cat:'metamorfiche', level:3,
+    q:"Cosa avviene chimicamente durante il metamorfismo delle rocce?",
+    opts:["Le rocce si sciolgono completamente e poi ricristallizzano come magma","I minerali delle rocce originarie perdono stabilità e subiscono ricristallizzazione allo stato solido, formando minerali più stabili","I sedimenti vengono cementati da calcite","Il silicio si separa dall'ossigeno"],
+    ans:1,
+    exp:"Il metamorfismo comporta una ricristallizzazione allo stato solido (non fusione) in cui i minerali originari perdono stabilità per le nuove condizioni di T e P, e si riorganizzano formando minerali più stabili nelle nuove condizioni."
+  },
+  {
+    cat:'metamorfiche', level:3,
+    q:"La presenza di acqua durante il metamorfismo ha quale effetto?",
+    opts:["Impedisce la formazione di cristalli","Favorisce la formazione di cristalli più grandi e stabili, come i granati","Causa la fusione immediata della roccia","Non ha alcun effetto sul processo metamorfico"],
+    ans:1,
+    exp:"L'acqua infiltrata nelle rocce favorisce il metamorfismo agevolando la formazione di cristalli più grandi e stabili. Si creano così minerali come i granati, usati come pietre preziose."
+  },
+  {
+    cat:'metamorfiche', level:3,
+    q:"Da quale roccia sedimentaria di origine organica si forma il marmo?",
+    opts:["Arenaria","Argillite","Calcare","Conglomerato"],
+    ans:2,
+    exp:"Il marmo si forma dal metamorfismo del calcare organogeno. Durante il processo, la calcite ricristallizza e i fossili vengono completamente cancellati."
+  }
+];
+
+// ============================================================
+//  GAME STATE
+// ============================================================
+let selectedLevel = 0;
+let gameQuestions  = [];
+let currentQ      = 0;
+let score         = 0;
+let correct       = 0;
+let wrong         = 0;
+let streak        = 0;
+let bestStreak    = 0;
+let answered      = false;
+let timerInterval = null;
+let timerLeft     = 0;
+const TIMER_SECS  = { 1:25, 2:20, 3:15 };
+
+const CAT_LABELS  = { minerali:'Minerali', rocce:'Rocce', magmatiche:'Rocce Magmatiche', sedimentarie:'Rocce Sedimentarie', metamorfiche:'Rocce Metamorfiche' };
+const CAT_TAG_CLASS = { minerali:'tag-minerali', rocce:'tag-rocce', magmatiche:'tag-magmatiche', sedimentarie:'tag-sedimentarie', metamorfiche:'tag-metamorfiche' };
+const LEVEL_NAMES = { 1:'LV 1 – Raccoglitore', 2:'LV 2 – Geologo', 3:'LV 3 – Mineralogista' };
+
+function selectLevel(lv) {
+  selectedLevel = lv;
+  document.querySelectorAll('.level-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector(`[data-level="${lv}"]`).classList.add('selected');
+  document.getElementById('btnStart').disabled = false;
+  playClickSound();
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+function startGame() {
+  if (!selectedLevel) return;
+  const ac = getAC();
+  if (ac.state === 'suspended') ac.resume();
+  playClickSound();
+  startBgMusic();
+
+  // Filter by level (include lower levels too for higher difficulties)
+  const pool = allQuestions.filter(q => q.level <= selectedLevel);
+  // Ensure good category distribution
+  const cats = ['minerali','rocce','magmatiche','sedimentarie','metamorfiche'];
+  let selected = [];
+  cats.forEach(cat => {
+    const catQ = shuffle(pool.filter(q=>q.cat===cat));
+    const take = selectedLevel === 1 ? 2 : selectedLevel === 2 ? 3 : 4;
+    selected.push(...catQ.slice(0, take));
+  });
+  gameQuestions = shuffle(selected).slice(0, selectedLevel === 1 ? 10 : selectedLevel === 2 ? 15 : 20);
+
+  currentQ = 0; score = 0; correct = 0; wrong = 0; streak = 0; bestStreak = 0;
+
+  showScreen('screen-game');
+  document.getElementById('hudLevel').textContent = LEVEL_NAMES[selectedLevel];
+  renderQuestion();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function renderQuestion() {
+  const q = gameQuestions[currentQ];
+  answered = false;
+
+  // HUD
+  document.getElementById('hudQ').textContent = `${currentQ+1}/${gameQuestions.length}`;
+  document.getElementById('hudScore').textContent = score;
+  document.getElementById('hudStreak').textContent = streak > 0 ? `${streak}🔥` : '0';
+  const pct = (currentQ/gameQuestions.length)*100;
+  document.getElementById('progressFill').style.width = pct+'%';
+
+  // Tag
+  const tag = document.getElementById('qTag');
+  tag.textContent = CAT_LABELS[q.cat];
+  tag.className = 'q-category-tag ' + CAT_TAG_CLASS[q.cat];
+
+  // Question
+  document.getElementById('questionText').textContent = q.q;
+
+  // Options — shuffle options but track correct answer
+  const letters = ['A','B','C','D'];
+  const indices = [0,1,2,3];
+  const shuffledIdx = shuffle(indices);
+  const newCorrectPos = shuffledIdx.indexOf(q.ans);
+
+  const grid = document.getElementById('optionsGrid');
+  grid.innerHTML = '';
+  shuffledIdx.forEach((origIdx, pos) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.dataset.letter = letters[pos];
+    btn.dataset.correct = (origIdx === q.ans) ? '1' : '0';
+    btn.textContent = q.opts[origIdx];
+    btn.addEventListener('click', () => checkAnswer(btn, origIdx === q.ans, q));
+    grid.appendChild(btn);
+  });
+
+  // Feedback
+  const fb = document.getElementById('feedbackBanner');
+  fb.style.display = 'none'; fb.textContent = '';
+  document.getElementById('btnNext').style.display = 'none';
+  document.getElementById('questionCard').classList.remove('shake','glow-correct');
+
+  // Timer
+  clearInterval(timerInterval);
+  timerLeft = TIMER_SECS[selectedLevel];
+  updateTimerBar();
+  timerInterval = setInterval(() => {
+    timerLeft--;
+    updateTimerBar();
+    if (timerLeft <= 0) { clearInterval(timerInterval); timeOut(); }
+  }, 1000);
+}
+
+function updateTimerBar() {
+  const pct = (timerLeft / TIMER_SECS[selectedLevel]) * 100;
+  const fill = document.getElementById('timerFill');
+  fill.style.width = pct + '%';
+  fill.style.background = pct > 50 ? 'var(--crystal-teal)' : pct > 25 ? 'var(--mineral-gold)' : 'var(--lava-red)';
+}
+
+function timeOut() {
+  if (answered) return;
+  answered = true;
+  // Reveal correct answer
+  document.querySelectorAll('.option-btn').forEach(btn => {
+    btn.disabled = true;
+    if (btn.dataset.correct === '1') btn.classList.add('correct');
+  });
+  streak = 0; wrong++;
+  document.getElementById('hudStreak').textContent = '0';
+  showFeedback(false, "⏱️ Tempo scaduto! " + gameQuestions[currentQ].exp);
+  playWrongSound();
+  document.getElementById('questionCard').classList.add('shake');
+  document.getElementById('btnNext').style.display = 'inline-block';
+}
+
+function checkAnswer(btn, isCorrect, q) {
+  if (answered) return;
+  answered = true;
+  clearInterval(timerInterval);
+
+  document.querySelectorAll('.option-btn').forEach(b => {
+    b.disabled = true;
+    if (b.dataset.correct === '1') b.classList.add('correct');
+  });
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    const bonus = Math.ceil(timerLeft/5);
+    const pts = 10 + bonus + streak*2;
+    score += pts;
+    correct++;
+    streak++;
+    if (streak > bestStreak) bestStreak = streak;
+    document.getElementById('hudScore').textContent = score;
+    document.getElementById('hudStreak').textContent = `${streak}🔥`;
+    showFeedback(true, `✅ Esatto! +${pts} punti  —  ${q.exp}`);
+    playCorrectSound();
+    document.getElementById('questionCard').classList.add('glow-correct');
+    spawnParticles(btn);
+  } else {
+    btn.classList.add('wrong');
+    wrong++;
+    streak = 0;
+    document.getElementById('hudStreak').textContent = '0';
+    showFeedback(false, `❌ Sbagliato!  —  ${q.exp}`);
+    playWrongSound();
+    document.getElementById('questionCard').classList.add('shake');
+  }
+
+  document.getElementById('btnNext').style.display = 'inline-block';
+}
+
+function showFeedback(isOk, text) {
+  const fb = document.getElementById('feedbackBanner');
+  fb.textContent = text;
+  fb.className = 'feedback-banner ' + (isOk ? 'feedback-correct' : 'feedback-wrong');
+  fb.style.display = 'block';
+}
+
+function spawnParticles(btn) {
+  const rect = btn.getBoundingClientRect();
+  const emojis = ['💎','✨','🌟','⭐','🔮','🪨','⚡'];
+  for (let i=0;i<8;i++) {
+    const el = document.createElement('div');
+    el.className = 'particle';
+    el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    const dx = (Math.random()-0.5)*200;
+    const dy = -(80 + Math.random()*120);
+    el.style.cssText = `left:${rect.left+rect.width/2}px;top:${rect.top}px;--dx:${dx}px;--dy:${dy}px;animation-delay:${i*0.05}s`;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 1200);
+  }
+}
+
+function nextQuestion() {
+  playClickSound();
+  currentQ++;
+  if (currentQ >= gameQuestions.length) {
+    showResults();
+  } else {
+    renderQuestion();
+  }
+}
+
+function showResults() {
+  stopBgMusic();
+  showScreen('screen-results');
+
+  const pct = Math.round((correct/gameQuestions.length)*100);
+  document.getElementById('resultsPct').textContent = pct+'%';
+  document.getElementById('statsCorrect').textContent = correct;
+  document.getElementById('statsWrong').textContent = wrong;
+  document.getElementById('statsScore').textContent = score;
+  document.getElementById('statsBestStreak').textContent = bestStreak;
+
+  let trophy, title, subtitle, rankText, rankColor;
+  if (pct >= 90) {
+    trophy='🏆'; title='Maestro Geologo!'; subtitle='ESPERTO DELLE ROCCE';
+    rankText='🏆 Cristallografo Supremo'; rankColor='var(--mineral-gold)';
+    playTone(523,  'sine',0.3,0.2,0);
+    playTone(659,  'sine',0.3,0.2,0.15);
+    playTone(784,  'sine',0.3,0.2,0.3);
+    playTone(1047, 'sine',0.6,0.25,0.45);
+  } else if (pct >= 70) {
+    trophy='🥇'; title='Geologo Esperto!'; subtitle='MISSIONE COMPLETATA';
+    rankText='⛏️ Geologo Professionista'; rankColor='var(--crystal-teal)';
+    playTone(659,'sine',0.4,0.2,0); playTone(784,'sine',0.4,0.15,0.2);
+  } else if (pct >= 50) {
+    trophy='🥈'; title='Buon Lavoro!'; subtitle='CONTINUA A ESPLORARE';
+    rankText='🔬 Geologo in Formazione'; rankColor='var(--crystal-blue)';
+    playTone(440,'sine',0.3,0.15,0);
+  } else {
+    trophy='🪨'; title='Continua a Studiare!'; subtitle='LA TERRA TI ASPETTA';
+    rankText='🌱 Raccoglitore Principiante'; rankColor='var(--text-dim)';
+    playTone(330,'sine',0.3,0.1,0);
+  }
+
+  document.getElementById('resultsTrophy').textContent = trophy;
+  document.getElementById('resultsTitle').textContent = title;
+  document.getElementById('resultsSubtitle').textContent = subtitle;
+  const rb = document.getElementById('rankBadge');
+  rb.textContent = rankText;
+  rb.style.cssText = `background:rgba(0,0,0,0.3); border:2px solid ${rankColor}; color:${rankColor}`;
+}
+
+function restartSameLevel() {
+  playClickSound();
+  startBgMusic();
+  const lv = selectedLevel;
+  selectedLevel = lv;
+  startGame();
+}
+
+function goToMenu() {
+  playClickSound();
+  showScreen('screen-title');
+  document.querySelectorAll('.level-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('btnStart').disabled = true;
+  selectedLevel = 0;
+}
+
+// Auto-unlock sound context on first interaction
+document.addEventListener('click', () => { const ac = getAC(); if(ac.state==='suspended') ac.resume(); }, { once:true });
+</script>
+</body>
+</html>

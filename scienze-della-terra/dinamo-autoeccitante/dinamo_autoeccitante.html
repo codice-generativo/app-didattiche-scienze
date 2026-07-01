@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modello Dinamo Terrestre 3D - Pannello di Controllo</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #010101;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+        }
+
+        #ui-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            pointer-events: none;
+            max-width: 340px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 235, 59, 0.2);
+            backdrop-filter: blur(12px);
+            z-index: 10;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* Scrollbar personalizzata per il pannello */
+        #ui-overlay::-webkit-scrollbar { width: 6px; }
+        #ui-overlay::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+            color: #ffeb3b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            pointer-events: auto;
+        }
+
+        .controls {
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .control-group {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .slider-label {
+            font-size: 0.75rem;
+            color: #ddd;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .slider-label span { color: #ffeb3b; font-weight: bold; }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            accent-color: #ffeb3b;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            font-size: 0.9rem;
+            letter-spacing: 3px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="loading">INIZIALIZZAZIONE STRUMENTI DI MISURA...</div>
+
+<div id="ui-overlay">
+    <h1>Controllo Geodinamo</h1>
+    
+    <div class="controls">
+        <!-- Controllo Nucleo Esterno -->
+        <div class="control-group">
+            <label class="toggle-container">
+                <input type="checkbox" id="toggleOuterCore" checked> 
+                <span>Visualizza Nucleo Esterno</span>
+            </label>
+            <div style="margin-top:10px;">
+                <div class="slider-label">Trasparenza Volume: <span id="val-opacity">100%</span></div>
+                <input type="range" id="opacityRange" min="0.3" max="5" step="0.2" value="1">
+            </div>
+        </div>
+
+        <!-- Controllo Campo Magnetico -->
+        <div class="control-group">
+            <div class="slider-label">Spessore Linee Flusso: <span id="val-thickness">1.0</span></div>
+            <input type="range" id="thicknessRange" min="0.1" max="5" step="0.1" value="1">
+            
+            <div class="slider-label" style="margin-top:8px;">Velocità Vettori: <span id="val-fieldSpeed">1.0</span></div>
+            <input type="range" id="fieldSpeedRange" min="0" max="5" step="0.1" value="1">
+
+            <div class="slider-label" style="margin-top:8px;">Dimensione Vettori: <span id="val-vectorSize">1.0</span></div>
+            <input type="range" id="vectorSizeRange" min="0.1" max="3" step="0.1" value="1">
+        </div>
+
+        <!-- Controllo Moti Convettivi -->
+        <div class="control-group">
+            <div class="slider-label">Scala Flussi Convettivi: <span id="val-spiralSize">1.0</span></div>
+            <input type="range" id="spiralSizeRange" min="0.5" max="2.5" step="0.1" value="1">
+            
+            <div class="slider-label" style="margin-top:8px;">Rotazione Globale: <span id="val-rotSpeed">1.0</span></div>
+            <input type="range" id="speedRange" min="0" max="4" step="0.1" value="1">
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<script>
+    let scene, camera, renderer, controls;
+    let globeGroup, outerCoreGroup, spiralGroup;
+    let spirals = [], fieldLines = [], coreLayers = [];
+    
+    // Parametri dinamici
+    const params = {
+        rotationSpeed: 0.005,
+        fieldSpeedFactor: 1.0,
+        vectorScale: 1.0,
+        coreOpacityFactor: 1.0,
+        spiralScale: 1.0,
+        thickness: 1.0
+    };
+
+    function init() {
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(25, 20, 30);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        const pLight = new THREE.PointLight(0xffffff, 1.2);
+        pLight.position.set(20, 30, 20);
+        scene.add(pLight);
+
+        globeGroup = new THREE.Group();
+        scene.add(globeGroup);
+
+        spiralGroup = new THREE.Group();
+        globeGroup.add(spiralGroup);
+
+        createModel();
+        setupUI();
+        
+        window.addEventListener('resize', onWindowResize);
+        document.getElementById('loading').style.display = 'none';
+        
+        animate();
+    }
+
+    function createModel() {
+        // 1. Nucleo Interno
+        const icGeo = new THREE.SphereGeometry(2.5, 32, 32);
+        const icMat = new THREE.MeshPhongMaterial({ color: 0xff3300, emissive: 0x440000 });
+        globeGroup.add(new THREE.Mesh(icGeo, icMat));
+
+        // 2. Nucleo Esterno Giallo
+        outerCoreGroup = new THREE.Group();
+        globeGroup.add(outerCoreGroup);
+
+        const numLayers = 18;
+        for (let i = 0; i < numLayers; i++) {
+            const t = i / (numLayers - 1);
+            const radius = 2.6 + (8.5 - 2.6) * t;
+            const opacity = 0.07 * Math.pow(1 - t, 1.8); 
+
+            const layerGeo = new THREE.SphereGeometry(radius, 32, 32);
+            const layerMat = new THREE.MeshBasicMaterial({
+                color: 0xffff00,
+                transparent: true,
+                opacity: opacity,
+                blending: THREE.AdditiveBlending,
+                side: THREE.BackSide,
+                depthWrite: false
+            });
+            const mesh = new THREE.Mesh(layerGeo, layerMat);
+            outerCoreGroup.add(mesh);
+            coreLayers.push({ mesh, baseOpacity: opacity, phase: Math.random() * Math.PI });
+        }
+
+        // 3. Moti Convettivi
+        createSpirals();
+
+        // 4. Campo Magnetico
+        createMagneticField();
+    }
+
+    function createSpirals() {
+        // Pulizia se ricreato
+        spirals.forEach(s => spiralGroup.remove(s.mesh));
+        spirals = [];
+
+        const count = 6;
+        for (let i = 0; i < count; i++) {
+            const angle = (i / count) * Math.PI * 2;
+            const spiral = createSpiralMesh(180, 0.7, 10);
+            spiral.position.set(Math.cos(angle) * 4.2, 0, Math.sin(angle) * 4.2);
+            spiralGroup.add(spiral);
+            spirals.push({ mesh: spiral, offset: Math.random() * Math.PI });
+        }
+    }
+
+    function createSpiralMesh(pts, r, h) {
+        const points = [];
+        for (let i = 0; i <= pts; i++) {
+            const t = i / pts;
+            const a = t * Math.PI * 8;
+            points.push(new THREE.Vector3(r * Math.cos(a), (t - 0.5) * h, r * Math.sin(a)));
+        }
+        const curve = new THREE.CatmullRomCurve3(points);
+        const geo = new THREE.TubeGeometry(curve, 80, 0.06, 6, false);
+        const mat = new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending });
+        return new THREE.Mesh(geo, mat);
+    }
+
+    function createMagneticField() {
+        // Rimuovi vettori esistenti se necessario
+        fieldLines.forEach(f => scene.remove(f.vector));
+        fieldLines = [];
+
+        const lineCount = 12;
+        for (let i = 0; i < lineCount; i++) {
+            const a = (i / lineCount) * Math.PI * 2;
+            const curve = new THREE.QuadraticBezierCurve3(
+                new THREE.Vector3(0, -5, 0),
+                new THREE.Vector3(Math.cos(a) * 35, 0, Math.sin(a) * 35),
+                new THREE.Vector3(0, 5, 0)
+            );
+
+            // Linea di flusso
+            const pts = curve.getPoints(60);
+            const geo = new THREE.BufferGeometry().setFromPoints(pts);
+            const mat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.1 });
+            const line = new THREE.Line(geo, mat);
+            globeGroup.add(line);
+
+            // Vettore (Cono)
+            const coneGeo = new THREE.ConeGeometry(0.25, 0.6, 8);
+            const coneMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 });
+            const vector = new THREE.Mesh(coneGeo, coneMat);
+            scene.add(vector);
+            
+            fieldLines.push({ 
+                line, // Riferimento per spessore/opacità
+                curve, 
+                vector, 
+                progress: Math.random(), 
+                speed: 0.0015 + Math.random() * 0.001 
+            });
+        }
+    }
+
+    function setupUI() {
+        const updateVal = (id, val) => document.getElementById(id).innerText = val;
+
+        document.getElementById('speedRange').oninput = (e) => {
+            params.rotationSpeed = 0.005 * e.target.value;
+            updateVal('val-rotSpeed', e.target.value);
+        };
+
+        document.getElementById('toggleOuterCore').onchange = (e) => {
+            outerCoreGroup.visible = e.target.checked;
+        };
+
+        document.getElementById('opacityRange').oninput = (e) => {
+            params.coreOpacityFactor = parseFloat(e.target.value);
+            updateVal('val-opacity', Math.round(params.coreOpacityFactor * 100) + '%');
+        };
+
+        document.getElementById('thicknessRange').oninput = (e) => {
+            params.thickness = parseFloat(e.target.value);
+            updateVal('val-thickness', params.thickness);
+            fieldLines.forEach(f => f.line.material.opacity = 0.1 * params.thickness);
+        };
+
+        document.getElementById('fieldSpeedRange').oninput = (e) => {
+            params.fieldSpeedFactor = parseFloat(e.target.value);
+            updateVal('val-fieldSpeed', params.fieldSpeedRange);
+            updateVal('val-fieldSpeed', e.target.value);
+        };
+
+        document.getElementById('vectorSizeRange').oninput = (e) => {
+            params.vectorScale = parseFloat(e.target.value);
+            updateVal('val-vectorSize', params.vectorScale);
+        };
+
+        document.getElementById('spiralSizeRange').oninput = (e) => {
+            params.spiralScale = parseFloat(e.target.value);
+            updateVal('val-spiralSize', params.spiralScale);
+            spiralGroup.scale.setScalar(params.spiralScale);
+        };
+    }
+
+    function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        const time = Date.now() * 0.001;
+
+        globeGroup.rotation.y += params.rotationSpeed;
+
+        // Opacità Nucleo
+        if (outerCoreGroup.visible) {
+            coreLayers.forEach(l => {
+                l.mesh.material.opacity = l.baseOpacity * params.coreOpacityFactor * (0.85 + Math.sin(time * 0.7 + l.phase) * 0.15);
+            });
+        }
+
+        // Spirali
+        spirals.forEach(s => s.mesh.rotation.y += params.rotationSpeed * 10);
+
+        // Vettori Magnetici
+        fieldLines.forEach(f => {
+            f.progress += f.speed * params.fieldSpeedFactor;
+            if (f.progress > 0.98) f.progress = 0.02;
+
+            const pos = f.curve.getPoint(f.progress);
+            const tangent = f.curve.getTangent(f.progress);
+            
+            const worldPos = pos.clone().applyMatrix4(globeGroup.matrixWorld);
+            const worldTangent = tangent.clone().transformDirection(globeGroup.matrixWorld);
+            
+            f.vector.position.copy(worldPos);
+            
+            const lookAtTarget = worldPos.clone().add(worldTangent);
+            f.vector.lookAt(lookAtTarget);
+            f.vector.rotateX(Math.PI / 2);
+
+            const fade = Math.sin(f.progress * Math.PI);
+            f.vector.material.opacity = fade * 0.8;
+            f.vector.scale.setScalar(params.vectorScale * (0.5 + fade * 0.5));
+        });
+
+        controls.update();
+        renderer.render(scene, camera);
+    }
+
+    window.onload = init;
+</script>
+</body>
+</html>

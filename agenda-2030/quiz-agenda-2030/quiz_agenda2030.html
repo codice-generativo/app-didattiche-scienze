@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz — Agenda 2030</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #0a1628;
+  color: #e8edf5;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.stars { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+.star { position: absolute; background: #fff; border-radius: 50%; animation: twinkle linear infinite; }
+@keyframes twinkle { 0%,100%{opacity:.1;transform:scale(1)}50%{opacity:.8;transform:scale(1.3)} }
+
+#app {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 700px;
+  background: rgba(15,25,50,0.93);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px; padding: 2rem;
+  backdrop-filter: blur(10px);
+}
+
+.header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; }
+.header-title h1 { font-size:18px; font-weight:700; background:linear-gradient(135deg,#4ade80,#22d3ee,#818cf8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.header-title p { font-size:12px; color:rgba(255,255,255,.45); margin-top:2px; }
+.header-controls { display:flex; gap:8px; align-items:center; }
+.score-pill { font-size:13px; font-weight:600; padding:5px 14px; border-radius:20px; background:rgba(74,222,128,.15); border:1px solid rgba(74,222,128,.3); color:#4ade80; }
+.audio-btn { font-size:18px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); border-radius:10px; padding:5px 10px; cursor:pointer; color:#fff; transition:background .2s; }
+.audio-btn:hover { background:rgba(255,255,255,.15); }
+
+.progress-wrap { height:5px; background:rgba(255,255,255,.08); border-radius:3px; overflow:hidden; margin-bottom:1.5rem; }
+#progress-bar { height:100%; width:0%; background:linear-gradient(90deg,#4ade80,#22d3ee); border-radius:3px; transition:width .5s ease; }
+
+/* ── SETUP ── */
+#setup-screen { display:flex; flex-direction:column; gap:1.5rem; }
+.setup-label { font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,.4); margin-bottom:.6rem; }
+
+.level-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.count-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+
+.sel-card {
+  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1);
+  border-radius:14px; padding:14px 10px; cursor:pointer; text-align:center;
+  transition:background .15s,border-color .15s,transform .1s;
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+}
+.sel-card:hover { background:rgba(255,255,255,.09); border-color:rgba(255,255,255,.22); }
+.sel-card:active { transform:scale(.97); }
+.sel-card.active { border-width:2px; }
+.card-icon { font-size:26px; line-height:1; }
+.card-title { font-size:14px; font-weight:700; }
+.card-sub { font-size:11px; color:rgba(255,255,255,.45); line-height:1.4; }
+
+.sel-card.lv-easy.active  { background:rgba(74,222,128,.12);  border-color:#4ade80; }
+.sel-card.lv-easy.active .card-title  { color:#4ade80; }
+.sel-card.lv-med.active   { background:rgba(251,191,36,.12);  border-color:#fbbf24; }
+.sel-card.lv-med.active .card-title   { color:#fbbf24; }
+.sel-card.lv-hard.active  { background:rgba(248,113,113,.12); border-color:#f87171; }
+.sel-card.lv-hard.active .card-title  { color:#f87171; }
+.sel-card.cnt-card.active { background:rgba(34,211,238,.12);  border-color:#22d3ee; }
+.sel-card.cnt-card.active .card-title { color:#22d3ee; }
+
+.start-btn {
+  width:100%; padding:14px; background:linear-gradient(135deg,#4ade80,#22d3ee);
+  border:none; border-radius:14px; font-family:inherit; font-size:16px;
+  font-weight:700; color:#0a1628; cursor:pointer; transition:opacity .2s,transform .1s; margin-top:.25rem;
+}
+.start-btn:hover { opacity:.9; }
+.start-btn:active { transform:scale(.98); }
+
+#level-badge { font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; display:none; letter-spacing:.5px; }
+
+/* ── QUESTION ── */
+#question-panel { display:none; flex-direction:column; gap:10px; }
+#cat-badge { display:inline-block; font-size:11px; font-weight:600; padding:3px 12px; border-radius:20px; letter-spacing:.5px; text-transform:uppercase; }
+#q-num { font-size:12px; color:rgba(255,255,255,.4); margin-bottom:4px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.diff-dots { display:inline-flex; gap:3px; }
+.diff-dots span { width:7px; height:7px; border-radius:50%; display:inline-block; }
+#q-text { font-size:18px; font-weight:600; line-height:1.55; color:#f0f4ff; margin-bottom:.5rem; min-height:56px; }
+#options-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:.5rem; }
+
+.opt-btn {
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1);
+  border-radius:12px; padding:12px 14px; font-family:inherit; font-size:14px;
+  color:#dce8ff; cursor:pointer; text-align:left; line-height:1.4;
+  display:flex; align-items:flex-start; gap:9px;
+  transition:background .15s,border-color .15s,transform .1s;
+}
+.opt-btn:hover:not(:disabled) { background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.25); }
+.opt-btn:active:not(:disabled) { transform:scale(.97); }
+.opt-letter { font-size:12px; font-weight:700; min-width:20px; height:20px; border-radius:6px; background:rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center; flex-shrink:0; color:rgba(255,255,255,.5); margin-top:1px; }
+.opt-btn.correct { background:rgba(74,222,128,.15); border-color:#4ade80; color:#bbffd4; }
+.opt-btn.correct .opt-letter { background:rgba(74,222,128,.25); color:#4ade80; }
+.opt-btn.wrong { background:rgba(248,113,113,.15); border-color:#f87171; color:#fecaca; }
+.opt-btn.wrong .opt-letter { background:rgba(248,113,113,.25); color:#f87171; }
+
+#feedback { display:none; padding:12px 16px; border-radius:12px; font-size:14px; line-height:1.6; }
+#feedback.ok { display:block; background:rgba(74,222,128,.1); border:1px solid rgba(74,222,128,.3); color:#bbffd4; }
+#feedback.no { display:block; background:rgba(248,113,113,.1); border:1px solid rgba(248,113,113,.3); color:#fecaca; }
+
+#next-btn { display:none; float:right; padding:10px 22px; border-radius:12px; background:linear-gradient(135deg,#4ade80,#22d3ee); border:none; font-family:inherit; font-size:14px; font-weight:700; color:#0a1628; cursor:pointer; transition:opacity .2s,transform .1s; }
+#next-btn:hover { opacity:.9; }
+#next-btn:active { transform:scale(.97); }
+
+/* ── RESULTS ── */
+#result-screen { display:none; flex-direction:column; align-items:center; gap:1.25rem; padding:1rem 0; text-align:center; }
+.res-emoji { font-size:56px; }
+.res-score { font-size:52px; font-weight:800; background:linear-gradient(135deg,#4ade80,#22d3ee,#818cf8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.res-label { font-size:22px; font-weight:700; color:#f0f4ff; }
+.res-sub { font-size:14px; color:rgba(255,255,255,.55); max-width:400px; line-height:1.7; }
+.breakdown { display:flex; gap:12px; margin-top:.5rem; flex-wrap:wrap; justify-content:center; }
+.bd-card { padding:12px 20px; border-radius:14px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); min-width:85px; }
+.bd-n { font-size:26px; font-weight:800; }
+.bd-n.g{color:#4ade80} .bd-n.r{color:#f87171} .bd-n.w{color:#818cf8} .bd-n.y{color:#fbbf24}
+.bd-l { font-size:11px; color:rgba(255,255,255,.4); margin-top:3px; }
+.res-btns { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:.5rem; }
+#restart-btn,#setup-btn { padding:12px 28px; border-radius:12px; border:none; font-family:inherit; font-size:14px; font-weight:700; cursor:pointer; transition:opacity .2s,transform .1s; }
+#restart-btn { background:linear-gradient(135deg,#818cf8,#22d3ee); color:#fff; }
+#setup-btn { background:rgba(255,255,255,.1); color:#e8edf5; border:1px solid rgba(255,255,255,.2); }
+#restart-btn:hover,#setup-btn:hover { opacity:.85; }
+#restart-btn:active,#setup-btn:active { transform:scale(.97); }
+
+.confetti-piece { position:fixed; width:8px; height:14px; border-radius:2px; top:-20px; animation:cffall linear forwards; pointer-events:none; z-index:999; }
+@keyframes cffall { 0%{transform:translateY(0) rotate(0deg);opacity:1} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
+
+@media(max-width:520px){
+  #app{padding:1.25rem}
+  .level-grid{grid-template-columns:1fr}
+  .count-grid{grid-template-columns:repeat(2,1fr)}
+  #options-grid{grid-template-columns:1fr}
+  #q-text{font-size:16px}
+}
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+
+<div id="app">
+  <div class="header">
+    <div class="header-title">
+      <h1>Quiz — Agenda 2030</h1>
+      <p>Fame nel Mondo · Ambiente · Guerra</p>
+    </div>
+    <div class="header-controls">
+      <div class="score-pill" id="score-pill" style="display:none">Punti: <span id="score-disp">0</span></div>
+      <span id="level-badge"></span>
+      <button class="audio-btn" id="audio-btn">🔊</button>
+    </div>
+  </div>
+
+  <div class="progress-wrap"><div id="progress-bar"></div></div>
+
+  <!-- SETUP -->
+  <div id="setup-screen">
+    <div>
+      <div class="setup-label">Scegli il livello di difficoltà</div>
+      <div class="level-grid">
+        <div class="sel-card lv-easy" data-level="easy" onclick="selectLevel(this)">
+          <div class="card-icon">🌱</div>
+          <div class="card-title">Base</div>
+          <div class="card-sub">Definizioni e concetti fondamentali dell'Agenda 2030</div>
+        </div>
+        <div class="sel-card lv-med" data-level="medium" onclick="selectLevel(this)">
+          <div class="card-icon">🌍</div>
+          <div class="card-title">Intermedio</div>
+          <div class="card-sub">Connessioni tra Goal, cause e conseguenze dei problemi</div>
+        </div>
+        <div class="sel-card lv-hard" data-level="hard" onclick="selectLevel(this)">
+          <div class="card-icon">🔬</div>
+          <div class="card-title">Avanzato</div>
+          <div class="card-sub">Analisi critica, scenari complessi e ragionamento sistemico</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="setup-label">Numero di domande</div>
+      <div class="count-grid">
+        <div class="sel-card cnt-card" data-count="5" onclick="selectCount(this)">
+          <div class="card-icon">⚡</div>
+          <div class="card-title">5</div>
+          <div class="card-sub">Ripasso rapido</div>
+        </div>
+        <div class="sel-card cnt-card" data-count="10" onclick="selectCount(this)">
+          <div class="card-icon">📖</div>
+          <div class="card-title">10</div>
+          <div class="card-sub">Sessione breve</div>
+        </div>
+        <div class="sel-card cnt-card" data-count="15" onclick="selectCount(this)">
+          <div class="card-icon">🎯</div>
+          <div class="card-title">15</div>
+          <div class="card-sub">Quiz completo</div>
+        </div>
+        <div class="sel-card cnt-card" data-count="all" onclick="selectCount(this)">
+          <div class="card-icon">🏆</div>
+          <div class="card-title">Tutte</div>
+          <div class="card-sub">Sfida totale</div>
+        </div>
+      </div>
+    </div>
+    <button class="start-btn" id="start-btn" onclick="startGame()" disabled style="opacity:.4;cursor:not-allowed">Inizia il Quiz →</button>
+  </div>
+
+  <!-- QUESTION -->
+  <div id="question-panel">
+    <div id="cat-badge"></div>
+    <div id="q-num"></div>
+    <div id="q-text"></div>
+    <div id="options-grid"></div>
+    <div id="feedback"></div>
+    <button id="next-btn">Prossima →</button>
+    <div style="clear:both"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="result-screen">
+    <div class="res-emoji" id="res-emoji">🌍</div>
+    <div class="res-score" id="res-score"></div>
+    <div class="res-label" id="res-label"></div>
+    <div class="res-sub" id="res-sub"></div>
+    <div class="breakdown">
+      <div class="bd-card"><div class="bd-n g" id="bd-ok">0</div><div class="bd-l">Corrette</div></div>
+      <div class="bd-card"><div class="bd-n r" id="bd-no">0</div><div class="bd-l">Errate</div></div>
+      <div class="bd-card"><div class="bd-n w" id="bd-tot">0</div><div class="bd-l">Totale</div></div>
+      <div class="bd-card"><div class="bd-n y" id="bd-pts">0</div><div class="bd-l">Punti</div></div>
+    </div>
+    <div class="res-btns">
+      <button id="restart-btn" onclick="restartSame()">🔄 Rigioca stesso livello</button>
+      <button id="setup-btn" onclick="goSetup()">⚙️ Cambia impostazioni</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// stars
+(function(){
+  const c=document.getElementById('stars');
+  for(let i=0;i<80;i++){
+    const s=document.createElement('div');s.className='star';
+    const z=Math.random()*2.5+.5;
+    s.style.cssText=`width:${z}px;height:${z}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-duration:${Math.random()*4+2}s;animation-delay:${Math.random()*4}s;`;
+    c.appendChild(s);
+  }
+})();
+
+// ── QUESTIONS ──────────────────────────────────────────────────────────────────
+const Q = [
+  // EASY — definizioni dirette, fatti base
+  {diff:'easy',cat:"Agenda 2030",bg:"rgba(30,160,120,.25)",col:"#4ade80",
+   q:"Quanti obiettivi (Goal) compone l'Agenda 2030?",
+   opts:["10","17","20","25"],ans:1,
+   exp:"L'Agenda 2030 è composta da 17 Goal che spaziano dalla povertà alla pace e alla tutela del pianeta."},
+  {diff:'easy',cat:"Goal 2",bg:"rgba(34,211,238,.2)",col:"#22d3ee",
+   q:"Come si chiama il Goal 2 dell'Agenda 2030?",
+   opts:["Acqua pulita","Istruzione di qualità","Fame zero","Pace e giustizia"],ans:2,
+   exp:"Il Goal 2 si chiama 'Fame zero': vuole eliminare la fame, migliorare la nutrizione e promuovere un'agricoltura sostenibile."},
+  {diff:'easy',cat:"Acqua",bg:"rgba(34,211,238,.2)",col:"#22d3ee",
+   q:"Perché l'acqua è fondamentale per la produzione alimentare?",
+   opts:["Serve solo per lavare il cibo","Senza acqua non si irrigano i campi né si allevano gli animali","È necessaria solo per le industrie alimentari","Serve per produrre i pesticidi"],ans:1,
+   exp:"Senza acqua non si possono irrigare i campi, nutrire gli animali e sostenere le attività agricole. È una risorsa essenziale per il cibo."},
+  {diff:'easy',cat:"Spreco alimentare",bg:"rgba(129,140,248,.2)",col:"#818cf8",
+   q:"In quale Goal rientra il tema dello spreco alimentare?",
+   opts:["Goal 3 – Salute","Goal 8 – Lavoro","Goal 12 – Consumo responsabile","Goal 17 – Partnership"],ans:2,
+   exp:"Lo spreco alimentare si collega al Goal 12, che promuove modelli di consumo e produzione responsabili."},
+  {diff:'easy',cat:"Guerra e fame",bg:"rgba(248,113,113,.22)",col:"#f87171",
+   q:"Cosa succede alla produzione agricola nelle zone colpite dalla guerra?",
+   opts:["Aumenta grazie agli aiuti","Resta invariata","Si riduce perché i campi vengono distrutti e le persone fuggono","Migliora con le nuove tecnologie"],ans:2,
+   exp:"Nei territori di conflitto le persone non possono coltivare o commerciare in sicurezza. I campi vengono distrutti e il cibo diventa più scarso."},
+  {diff:'easy',cat:"Biodiversità",bg:"rgba(74,222,128,.18)",col:"#4ade80",
+   q:"Qual è il ruolo delle api nell'agricoltura?",
+   opts:["Producono miele per i mercati globali","Sono indispensabili per l'impollinazione di molte colture","Proteggono le piante dagli insetti nocivi","Aiutano a irrigare i campi naturalmente"],ans:1,
+   exp:"Gli insetti impollinatori come le api sono indispensabili per molte colture. Se si riduce la biodiversità, il sistema alimentare diventa più fragile."},
+  {diff:'easy',cat:"Malnutrizione",bg:"rgba(250,180,50,.2)",col:"#fbbf24",
+   q:"Una persona malnutrita è necessariamente qualcuno che non mangia affatto?",
+   opts:["Sì, è sempre chi digiuna","No: si può mangiare ma non ricevere le sostanze necessarie","Sì, riguarda solo i bambini piccoli","No, dipende solo dall'altitudine in cui vive"],ans:1,
+   exp:"Una persona può mangiare eppure non ricevere le sostanze necessarie per vivere bene e crescere in modo sano. Per questo non basta 'avere qualcosa da mangiare'."},
+  {diff:'easy',cat:"Cosa possiamo fare",bg:"rgba(34,211,238,.2)",col:"#22d3ee",
+   q:"Quale azione è alla portata di un singolo studente per contribuire al Goal 2?",
+   opts:["Costruire pozzi nei paesi poveri","Ridurre lo spreco alimentare quotidiano","Finanziare l'ONU con donazioni mensili","Smettere di mangiare prodotti coltivati"],ans:1,
+   exp:"Ridurre lo spreco alimentare è un'azione concreta che ognuno di noi può fare. Rispettare il cibo significa rispettare le risorse naturali e il lavoro per produrlo."},
+  {diff:'easy',cat:"Suolo",bg:"rgba(74,222,128,.18)",col:"#4ade80",
+   q:"Perché il suolo fertile è importante per il Goal 2?",
+   opts:["Permette di costruire infrastrutture","Senza suolo fertile non si può produrre la maggior parte degli alimenti","È necessario solo per l'industria estrattiva","Serve a regolare il clima delle città"],ans:1,
+   exp:"Il suolo è una risorsa fondamentale: senza suolo fertile non è possibile produrre la maggior parte degli alimenti di cui abbiamo bisogno."},
+  {diff:'easy',cat:"Agenda 2030",bg:"rgba(30,160,120,.25)",col:"#4ade80",
+   q:"Qual è l'idea di fondo dell'Agenda 2030?",
+   opts:["I problemi del mondo sono separati e vanno affrontati uno alla volta","I grandi problemi del mondo si influenzano a vicenda e vanno affrontati insieme","Solo i paesi ricchi devono risolvere i problemi globali","La tecnologia risolverà tutto automaticamente entro il 2030"],ans:1,
+   exp:"L'Agenda 2030 afferma che fame, povertà, inquinamento, guerra e disuguaglianze si influenzano a vicenda. Per questo invita i Paesi a lavorare insieme con una visione comune."},
+
+  // MEDIUM — connessioni tra Goal, cause, meccanismi
+  {diff:'medium',cat:"Cause della fame",bg:"rgba(250,180,50,.2)",col:"#fbbf24",
+   q:"Qual è la causa principale della fame nel mondo secondo l'opuscolo?",
+   opts:["La scarsità assoluta di cibo nel pianeta","La povertà combinata alla distribuzione ineguale del cibo","L'aumento della popolazione mondiale","La mancanza di tecnologie agricole avanzate"],ans:1,
+   exp:"Nel mondo si produce molto cibo, ma non tutto viene distribuito in modo giusto. La povertà impedisce a milioni di persone di acquistare cibo di qualità."},
+  {diff:'medium',cat:"Goal 6",bg:"rgba(30,160,120,.25)",col:"#4ade80",
+   q:"Perché il Goal 2 è collegato al Goal 6 (Acqua pulita)?",
+   opts:["Perché i popoli bevono più acqua se hanno fame","Perché senza acqua pulita non si garantisce una produzione agricola sicura","Perché l'acqua sporca riduce il numero di acquirenti","Perché i fiumi servono per trasportare le merci alimentari"],ans:1,
+   exp:"Senza acqua pulita non si può garantire una produzione agricola sicura. Acqua scarsa o inquinata riduce i raccolti e rende insicuri gli alimenti."},
+  {diff:'medium',cat:"Clima",bg:"rgba(248,113,113,.22)",col:"#f87171",
+   q:"Perché il cambiamento climatico aumenta le disuguaglianze sociali?",
+   opts:["Perché i ricchi emigrano nelle zone calde","Perché le popolazioni più povere hanno meno risorse per adattarsi agli eventi estremi","Perché le aziende agricole internazionali guadagnano di più","Perché i governi riducono la spesa pubblica durante le emergenze"],ans:1,
+   exp:"Le popolazioni più povere sono le più esposte agli effetti del cambiamento climatico: hanno meno risorse per adattarsi. Il clima amplifica così le disuguaglianze già esistenti."},
+  {diff:'medium',cat:"Suolo agricoltura",bg:"rgba(74,222,128,.18)",col:"#4ade80",
+   q:"Quale fenomeno peggiora la fertilità del suolo agricolo?",
+   opts:["L'irrigazione controllata con acqua pulita","La rotazione delle colture","Deforestazione, desertificazione e uso eccessivo di sostanze chimiche","L'aumento delle temperature medie in estate"],ans:2,
+   exp:"Quando il terreno si erode o viene contaminato a causa di deforestazione, desertificazione o chimica eccessiva, le coltivazioni diventano meno produttive."},
+  {diff:'medium',cat:"Guerra e ambiente",bg:"rgba(248,113,113,.22)",col:"#f87171",
+   q:"In che modo la guerra colpisce direttamente l'ambiente?",
+   opts:["Riduce le emissioni industriali","Può inquinare acqua e suolo, incendiare foreste e distruggere ecosistemi","Favorisce la crescita spontanea della vegetazione","Aumenta la biodiversità nelle zone spopolate"],ans:1,
+   exp:"La guerra inquina acqua e suolo, può incendiare foreste, distruggere ecosistemi e rendere inutilizzabili i terreni agricoli per molti anni."},
+  {diff:'medium',cat:"Spreco",bg:"rgba(129,140,248,.2)",col:"#818cf8",
+   q:"Quando si spreca cibo, oltre all'alimento stesso cosa viene sprecato?",
+   opts:["Solo il valore economico","Solo le calorie","Acqua, suolo, energia, lavoro umano e trasporti","Solo il packaging"],ans:2,
+   exp:"Lo spreco alimentare non è solo cibo: si sprecano anche acqua, suolo, energia, lavoro umano, trasporti e imballaggi usati per produrlo."},
+  {diff:'medium',cat:"Goal 16",bg:"rgba(30,160,120,.25)",col:"#4ade80",
+   q:"Perché il Goal 2 è collegato al Goal 16 (Pace e giustizia)?",
+   opts:["Perché i paesi in guerra importano più cibo","Perché senza pace è difficile coltivare, distribuire cibo e garantire il diritto all'alimentazione","Perché le guerre riducono la spesa militare liberando risorse per l'agricoltura","Perché le istituzioni gestiscono direttamente la produzione agricola"],ans:1,
+   exp:"Senza stabilità politica e sociale è difficile coltivare, trasportare e distribuire il cibo. Il Goal 16 (pace, giustizia, istituzioni solide) è strettamente legato al diritto al cibo."},
+  {diff:'medium',cat:"Agricoltura sostenibile",bg:"rgba(74,222,128,.18)",col:"#4ade80",
+   q:"Perché per il Goal 2 non basta 'produrre di più' per eliminare la fame?",
+   opts:["Perché il cibo in eccesso si deteriora durante il trasporto","Perché produrre di più senza sostenibilità distrugge suolo, acqua ed ecosistemi nel tempo","Perché i mercati non riescono ad assorbire i surplus","Perché più cibo significa automaticamente più sprechi"],ans:1,
+   exp:"Bisogna produrre senza distruggere il suolo, sprecare acqua o impoverire gli ecosistemi. Un'agricoltura che esaurisce le risorse non può garantire il cibo alle generazioni future."},
+  {diff:'medium',cat:"Goal 15",bg:"rgba(34,211,238,.2)",col:"#22d3ee",
+   q:"A quale Goal è collegato il Goal 2 per il tema di suolo fertile e biodiversità?",
+   opts:["Goal 11 – Città sostenibili","Goal 14 – Vita sott'acqua","Goal 15 – Vita sulla Terra","Goal 17 – Partnership globali"],ans:2,
+   exp:"Il Goal 2 è collegato al Goal 15 (Vita sulla Terra) perché suolo fertile e biodiversità sono indispensabili per produrre cibo in modo sostenibile."},
+  {diff:'medium',cat:"Filiera alimentare",bg:"rgba(250,180,50,.2)",col:"#fbbf24",
+   q:"Quali elementi sono tutti necessari per produrre il cibo secondo l'opuscolo?",
+   opts:["Solo acqua, suolo e sole","Acqua, suolo fertile, clima adatto, biodiversità, pace e organizzazione","Solo tecnologia agricola avanzata e capitali","Solo terreno e sementi di qualità"],ans:1,
+   exp:"Dietro ogni alimento c'è una filiera complessa: servono acqua, suolo fertile, clima adatto, biodiversità, ma anche pace, sicurezza e organizzazione sociale."},
+
+  // HARD — ragionamento critico, scenari complessi
+  {diff:'hard',cat:"Sistemi complessi",bg:"rgba(129,140,248,.2)",col:"#818cf8",
+   q:"Un paese produce abbondante cibo ma milioni di cittadini soffrono la fame. Qual è la spiegazione più coerente con l'Agenda 2030?",
+   opts:["Il cibo prodotto è di qualità troppo bassa","La fame dipende dalla distribuzione ineguale, non dalla quantità prodotta","La popolazione cresce più velocemente della produzione","Il paese non ha firmato l'Agenda 2030"],ans:1,
+   exp:"Nel mondo si produce molto cibo, ma non tutto è distribuito in modo giusto. La fame dipende da povertà, ineguaglianze e accesso alle risorse, non solo dalla quantità prodotta."},
+  {diff:'hard',cat:"Interconnessioni",bg:"rgba(248,113,113,.22)",col:"#f87171",
+   q:"Un conflitto armato distrugge campi, spinge alla fuga i contadini e inquina il suolo. Quale Goal NON è direttamente coinvolto in questo scenario specifico?",
+   opts:["Goal 2 – Fame zero","Goal 15 – Vita sulla Terra","Goal 16 – Pace e giustizia","Goal 4 – Istruzione di qualità"],ans:3,
+   exp:"Sono coinvolti il Goal 2 (campi distrutti → fame), il Goal 15 (suolo inquinato) e il Goal 16 (conflitto armato). Il Goal 4 (istruzione) non è il tema centrale di questo scenario."},
+  {diff:'hard',cat:"Paradossi globali",bg:"rgba(250,180,50,.2)",col:"#fbbf24",
+   q:"Perché l'opuscolo definisce lo spreco alimentare 'uno dei grandi paradossi del nostro tempo'?",
+   opts:["Perché il cibo sprecato costa meno di quello consumato","Perché milioni patiscono la fame mentre altrove enormi quantità di cibo vengono buttate","Perché chi spreca consuma meno energia di chi conserva","Perché lo spreco avviene solo nei paesi più poveri"],ans:1,
+   exp:"È un paradosso perché in molte aree si butta via cibo, mentre milioni di persone non hanno accesso a un'alimentazione adeguata. Questo squilibrio mostra l'ingiustizia della distribuzione globale."},
+  {diff:'hard',cat:"Visione sistemica",bg:"rgba(30,160,120,.25)",col:"#4ade80",
+   q:"Perché l'Agenda 2030 afferma che 'i grandi problemi del mondo non sono separati tra loro'?",
+   opts:["Perché tutti i problemi hanno la stessa causa: la sovrappopolazione","Perché fame, povertà, clima, guerra e disuguaglianze si influenzano a vicenda in modo sistemico","Perché l'ONU gestisce tutti i problemi con un'unica politica","Perché i paesi ricchi causano tutti i problemi"],ans:1,
+   exp:"L'Agenda 2030 riconosce che questi fenomeni si influenzano reciprocamente. Affrontare un problema senza considerare gli altri non porta a soluzioni durature."},
+  {diff:'hard',cat:"Vulnerabilità climatica",bg:"rgba(248,113,113,.22)",col:"#f87171",
+   q:"Perché le popolazioni povere sono le più vulnerabili al cambiamento climatico in relazione al Goal 2?",
+   opts:["Perché vivono tutte in zone costiere a rischio","Perché hanno meno risorse economiche e tecnologiche per adattarsi agli eventi estremi","Perché consumano più cibo e dipendono maggiormente dall'agricoltura","Perché non hanno accesso alle previsioni meteorologiche"],ans:1,
+   exp:"Le popolazioni povere non possono permettersi tecnologie agricole resilienti, infrastrutture idrauliche o protezioni dagli eventi estremi. Il cambiamento climatico amplifica così le disuguaglianze già esistenti."},
+  {diff:'hard',cat:"Sicurezza alimentare",bg:"rgba(34,211,238,.2)",col:"#22d3ee",
+   q:"Il Goal 2 afferma che 'non basta che il cibo esista'. Quale concetto approfondisce questa affermazione?",
+   opts:["Il cibo deve essere prodotto solo localmente","Il cibo deve essere sufficiente, sicuro, nutriente e accessibile a tutti","Il cibo deve essere distribuito dallo stato","Il cibo deve avere un prezzo uguale ovunque"],ans:1,
+   exp:"La sicurezza alimentare richiede che il cibo sia sufficiente in quantità, sicuro dal punto di vista sanitario, nutriente e accessibile economicamente a tutti: non basta che esista."},
+  {diff:'hard',cat:"Scenario critico",bg:"rgba(129,140,248,.2)",col:"#818cf8",
+   q:"Una regione affronta siccità prolungata con calo dei raccolti del 40%. Quali Goal sono simultaneamente coinvolti?",
+   opts:["Solo Goal 2 e Goal 1","Goal 2, Goal 6, Goal 13 e Goal 15","Solo Goal 13 perché è un fenomeno meteorologico","Goal 7 e Goal 9 perché manca l'acqua per le fabbriche"],ans:1,
+   exp:"La siccità tocca simultaneamente: Goal 2 (fame per calo dei raccolti), Goal 6 (scarsità idrica), Goal 13 (evento climatico estremo), Goal 15 (degrado del suolo e biodiversità). I problemi globali sono sempre interconnessi."},
+  {diff:'hard',cat:"Conclusione sistemica",bg:"rgba(250,180,50,.2)",col:"#fbbf24",
+   q:"Secondo l'opuscolo, capire che 'fame, ambiente e guerra sono collegati' significa che il futuro dipende da cosa?",
+   opts:["Dal controllo militare delle risorse naturali","Dal progresso tecnologico agricolo e dalle energie rinnovabili","Dall'equilibrio tra natura, diritti e convivenza pacifica","Dalla riduzione della popolazione mondiale entro il 2030"],ans:2,
+   exp:"Il futuro dell'umanità dipende dall'equilibrio tra natura (risorse ambientali), diritti (giustizia e accesso al cibo) e convivenza pacifica (assenza di conflitti). Questi tre pilastri sono inseparabili."}
+];
+
+// ── STATE ──────────────────────────────────────────────────────────────────────
+let selLevel=null, selCount=null;
+let pool=[], cur=0, score=0, ok=0, no=0, answered=false;
+let aCtx=null, mPlaying=false, aEnabled=true, mNodes=[];
+const PTS={easy:8,medium:12,hard:18};
+const LVINFO={
+  easy:{icon:'🌱',label:'Base',col:'#4ade80',bg:'rgba(74,222,128,.15)',brd:'rgba(74,222,128,.3)'},
+  medium:{icon:'🌍',label:'Intermedio',col:'#fbbf24',bg:'rgba(251,191,36,.15)',brd:'rgba(251,191,36,.3)'},
+  hard:{icon:'🔬',label:'Avanzato',col:'#f87171',bg:'rgba(248,113,113,.15)',brd:'rgba(248,113,113,.3)'}
+};
+
+function selectLevel(el){
+  document.querySelectorAll('.sel-card[data-level]').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active'); selLevel=el.dataset.level; checkReady();
+}
+function selectCount(el){
+  document.querySelectorAll('.sel-card[data-count]').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active'); selCount=el.dataset.count; checkReady();
+}
+function checkReady(){
+  const btn=document.getElementById('start-btn'), rdy=selLevel&&selCount;
+  btn.disabled=!rdy; btn.style.opacity=rdy?'1':'.4'; btn.style.cursor=rdy?'pointer':'not-allowed';
+}
+
+function startGame(){
+  const filtered=shuffle(Q.filter(q=>q.diff===selLevel));
+  const n=selCount==='all'?filtered.length:Math.min(+selCount,filtered.length);
+  pool=filtered.slice(0,n);
+  cur=0; score=0; ok=0; no=0;
+
+  document.getElementById('setup-screen').style.display='none';
+  document.getElementById('result-screen').style.display='none';
+  document.getElementById('question-panel').style.display='flex';
+  document.getElementById('score-pill').style.display='block';
+  document.getElementById('score-disp').textContent=0;
+
+  const info=LVINFO[selLevel], badge=document.getElementById('level-badge');
+  badge.textContent=info.icon+' '+info.label;
+  badge.style.cssText=`display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:${info.bg};border:1px solid ${info.brd};color:${info.col};letter-spacing:.5px;`;
+
+  loadQ();
+  if(aEnabled) setTimeout(playBg,400);
+}
+
+function loadQ(){
+  answered=false;
+  const q=pool[cur], tot=pool.length;
+  document.getElementById('progress-bar').style.width=(cur/tot*100)+'%';
+
+  const dotColors={easy:['#4ade80','rgba(255,255,255,.15)','rgba(255,255,255,.15)'],medium:['#fbbf24','#fbbf24','rgba(255,255,255,.15)'],hard:['#f87171','#f87171','#f87171']};
+  const dc=dotColors[q.diff];
+  const dots=`<span class="diff-dots">${dc.map(c=>`<span style="background:${c}"></span>`).join('')}</span>`;
+  const pts=PTS[q.diff];
+  document.getElementById('q-num').innerHTML=`Domanda ${cur+1} di ${tot} &nbsp;·&nbsp; +${pts} punti ${dots}`;
+
+  const badge=document.getElementById('cat-badge');
+  badge.textContent=q.cat; badge.style.background=q.bg; badge.style.color=q.col; badge.style.border=`1px solid ${q.col}55`;
+  document.getElementById('q-text').textContent=q.q;
+
+  const grid=document.getElementById('options-grid'); grid.innerHTML='';
+  ['A','B','C','D'].forEach((l,i)=>{
+    const btn=document.createElement('button'); btn.className='opt-btn';
+    btn.innerHTML=`<span class="opt-letter">${l}</span><span>${q.opts[i]}</span>`;
+    btn.onclick=()=>answer(i,btn,q); grid.appendChild(btn);
+  });
+
+  document.getElementById('feedback').className='';
+  document.getElementById('feedback').textContent='';
+  document.getElementById('next-btn').style.display='none';
+}
+
+function answer(idx,btn,q){
+  if(answered)return; answered=true;
+  document.querySelectorAll('.opt-btn').forEach(b=>b.disabled=true);
+  const fb=document.getElementById('feedback'), pts=PTS[q.diff];
+  if(idx===q.ans){
+    btn.classList.add('correct'); fb.className='ok';
+    fb.innerHTML=`<strong>✓ Corretto! +${pts} punti</strong><br>${q.exp}`;
+    score+=pts; ok++; document.getElementById('score-disp').textContent=score; playWin();
+  } else {
+    btn.classList.add('wrong'); document.querySelectorAll('.opt-btn')[q.ans].classList.add('correct');
+    fb.className='no'; fb.innerHTML=`<strong>✗ Non corretto.</strong><br>${q.exp}`; no++; playWrong();
+  }
+  const nb=document.getElementById('next-btn'); nb.style.display='block';
+  nb.textContent=cur===pool.length-1?'Vedi risultati 🏆':'Prossima →';
+}
+
+document.getElementById('next-btn').onclick=()=>{ cur++; cur>=pool.length?showResults():loadQ(); };
+
+function showResults(){
+  stopBg();
+  document.getElementById('question-panel').style.display='none';
+  document.getElementById('progress-bar').style.width='100%';
+  document.getElementById('result-screen').style.display='flex';
+  const pct=Math.round(ok/pool.length*100);
+  document.getElementById('res-score').textContent=score+' pt';
+  document.getElementById('bd-ok').textContent=ok;
+  document.getElementById('bd-no').textContent=no;
+  document.getElementById('bd-tot').textContent=pool.length;
+  document.getElementById('bd-pts').textContent=score;
+  let e,l,s;
+  if(pct>=90){e='🏆';l='Eccellente!';s='Padronanza completa. Sei pronto/a per la verifica!';confetti();for(let i=0;i<3;i++)setTimeout(playWin,i*500);}
+  else if(pct>=70){e='🌍';l='Molto bene!';s='Ottima comprensione. Ripassando i punti errati diventerai un esperto!';setTimeout(playWin,200);}
+  else if(pct>=50){e='📖';l='Buon inizio!';s='Hai compreso i concetti base. Rileggi le sezioni meno chiare e riprova.';}
+  else{e='💪';l='Continua a studiare!';s='L\'Agenda 2030 è complessa, ma ce la puoi fare. Rileggi l\'opuscolo e riprova!';}
+  document.getElementById('res-emoji').textContent=e;
+  document.getElementById('res-label').textContent=l;
+  document.getElementById('res-sub').textContent=s;
+}
+
+function restartSame(){ document.getElementById('result-screen').style.display='none'; startGame(); }
+function goSetup(){
+  stopBg();
+  document.getElementById('result-screen').style.display='none';
+  document.getElementById('score-pill').style.display='none';
+  document.getElementById('level-badge').style.display='none';
+  document.getElementById('progress-bar').style.width='0%';
+  document.getElementById('setup-screen').style.display='flex';
+}
+
+// ── AUDIO ──────────────────────────────────────────────────────────────────────
+function gctx(){if(!aCtx)aCtx=new(window.AudioContext||window.webkitAudioContext)();if(aCtx.state==='suspended')aCtx.resume();return aCtx;}
+function stopBg(){mPlaying=false;mNodes.forEach(n=>{try{n.stop();}catch(e){}});mNodes=[];}
+function playBg(){
+  if(!aEnabled)return;
+  try{
+    const c=gctx();stopBg();
+    const sc=[261.63,293.66,329.63,349.23,392,440,493.88,523.25],mel=[0,2,4,5,4,2,0,2,4,7,5,4,2,0,2,4,5,7,4,2,0],spb=60/88*.5,ns=[];
+    mel.forEach((ni,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.value=sc[ni];const t=c.currentTime+i*spb;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.07,t+.04);g.gain.linearRampToValueAtTime(0,t+spb*.85);o.start(t);o.stop(t+spb);ns.push(o);});
+    const bs=[130.81,146.83,164.81,174.61],bp=[0,2,1,3,0,2,1,3,0,2,1,3,0,2,1,3,0,2,1,3,0];
+    bp.forEach((ni,i)=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='triangle';o.frequency.value=bs[ni];const t=c.currentTime+i*spb;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.04,t+.04);g.gain.linearRampToValueAtTime(0,t+spb*.9);o.start(t);o.stop(t+spb);ns.push(o);});
+    mNodes=ns;mPlaying=true;setTimeout(()=>{if(mPlaying&&aEnabled)playBg();},mel.length*spb*1000-100);
+  }catch(e){}
+}
+function playWin(){
+  if(!aEnabled)return;
+  try{const c=gctx();[[523.25,0],[659.25,.11],[783.99,.22],[1046.5,.33]].forEach(([f,t])=>{const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='square';o.frequency.value=f;const st=c.currentTime+t;g.gain.setValueAtTime(.12,st);g.gain.exponentialRampToValueAtTime(.001,st+.22);o.start(st);o.stop(st+.25);});const o2=c.createOscillator(),g2=c.createGain();o2.connect(g2);g2.connect(c.destination);o2.type='sine';o2.frequency.setValueAtTime(880,c.currentTime+.5);o2.frequency.linearRampToValueAtTime(1174.66,c.currentTime+.68);g2.gain.setValueAtTime(.12,c.currentTime+.5);g2.gain.exponentialRampToValueAtTime(.001,c.currentTime+.72);o2.start(c.currentTime+.5);o2.stop(c.currentTime+.75);}catch(e){}
+}
+function playWrong(){
+  if(!aEnabled)return;
+  try{const c=gctx(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sawtooth';o.frequency.setValueAtTime(200,c.currentTime);o.frequency.linearRampToValueAtTime(110,c.currentTime+.28);g.gain.setValueAtTime(.1,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.32);o.start(c.currentTime);o.stop(c.currentTime+.35);}catch(e){}
+}
+document.getElementById('audio-btn').onclick=function(){aEnabled=!aEnabled;this.textContent=aEnabled?'🔊':'🔇';if(aEnabled)playBg();else stopBg();};
+
+// ── UTILS ──────────────────────────────────────────────────────────────────────
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function confetti(){
+  const cols=['#4ade80','#22d3ee','#818cf8','#fbbf24','#f87171','#e879f9'];
+  for(let i=0;i<60;i++){setTimeout(()=>{const el=document.createElement('div');el.className='confetti-piece';el.style.cssText=`left:${Math.random()*100}%;background:${cols[Math.floor(Math.random()*cols.length)]};animation-duration:${Math.random()*2+1.5}s;animation-delay:${Math.random()*.5}s;transform:rotate(${Math.random()*360}deg);`;document.body.appendChild(el);setTimeout(()=>el.remove(),3000);},i*30);}
+}
+</script>
+</body>
+</html>

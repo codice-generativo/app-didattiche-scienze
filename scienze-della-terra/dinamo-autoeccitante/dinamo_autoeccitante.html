@@ -372,37 +372,65 @@
 
     function createMagneticField() {
         // Rimuovi vettori esistenti se necessario
-        fieldLines.forEach(f => scene.remove(f.vector));
+        fieldLines.forEach(f => {
+            globeGroup.remove(f.line);
+            scene.remove(f.vector);
+        });
         fieldLines = [];
 
-        const lineCount = 12;
-        for (let i = 0; i < lineCount; i++) {
-            const a = (i / lineCount) * Math.PI * 2;
-            const curve = new THREE.QuadraticBezierCurve3(
-                new THREE.Vector3(0, -5, 0),
-                new THREE.Vector3(Math.cos(a) * 35, 0, Math.sin(a) * 35),
-                new THREE.Vector3(0, 5, 0)
-            );
+        const surfaceRadius = 8.5;
+        const anchorRadius = surfaceRadius * 1.02;
+        const thetaAnchors = [0.60, 0.74, 0.90];
+        const meridianPlanes = 8;
+        const samples = 120;
 
-            // Linea di flusso
-            const pts = curve.getPoints(60);
-            const geo = new THREE.BufferGeometry().setFromPoints(pts);
-            const mat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.1 });
-            const line = new THREE.Line(geo, mat);
-            globeGroup.add(line);
+        for (let p = 0; p < meridianPlanes; p++) {
+            const phi = (p / meridianPlanes) * Math.PI * 2;
 
-            // Vettore (Cono)
-            const coneGeo = new THREE.ConeGeometry(0.25, 0.6, 8);
-            const coneMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 });
-            const vector = new THREE.Mesh(coneGeo, coneMat);
-            scene.add(vector);
+            thetaAnchors.forEach((theta0, familyIndex) => {
+                const pts = [];
+                const sinTheta0 = Math.sin(theta0);
+                const L = anchorRadius / (sinTheta0 * sinTheta0);
 
-            fieldLines.push({
-                line, // Riferimento per spessore/opacità
-                curve,
-                vector,
-                progress: Math.random(),
-                speed: 0.0015 + Math.random() * 0.001
+                for (let i = 0; i <= samples; i++) {
+                    const t = i / samples;
+                    const theta = theta0 + (Math.PI - 2 * theta0) * t;
+                    const sinTheta = Math.sin(theta);
+                    const r = L * sinTheta * sinTheta;
+
+                    pts.push(new THREE.Vector3(
+                        r * sinTheta * Math.cos(phi),
+                        r * Math.cos(theta),
+                        r * sinTheta * Math.sin(phi)
+                    ));
+                }
+
+                if (pts[0].y > pts[pts.length - 1].y) {
+                    pts.reverse();
+                }
+
+                const curve = new THREE.CatmullRomCurve3(pts);
+                curve.arcLengthDivisions = samples;
+
+                // Linea di flusso dipolare esterna
+                const geo = new THREE.BufferGeometry().setFromPoints(pts);
+                const mat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.1 });
+                const line = new THREE.Line(geo, mat);
+                globeGroup.add(line);
+
+                // Vettore (Cono)
+                const coneGeo = new THREE.ConeGeometry(0.25, 0.6, 8);
+                const coneMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 });
+                const vector = new THREE.Mesh(coneGeo, coneMat);
+                scene.add(vector);
+
+                fieldLines.push({
+                    line, // Riferimento per spessore/opacita
+                    curve,
+                    vector,
+                    progress: 0.08 + ((p + familyIndex) % 7) * 0.12,
+                    speed: 0.0011 + familyIndex * 0.00025
+                });
             });
         }
     }
@@ -460,7 +488,7 @@
         requestAnimationFrame(animate);
         const time = Date.now() * 0.001;
 
-        globeGroup.rotation.y += params.rotationSpeed;
+        globeGroup.rotation.y -= params.rotationSpeed;
 
         // Opacità Nucleo
         if (outerCoreGroup.visible) {
@@ -477,8 +505,8 @@
             f.progress += f.speed * params.fieldSpeedFactor;
             if (f.progress > 0.98) f.progress = 0.02;
 
-            const pos = f.curve.getPoint(f.progress);
-            const tangent = f.curve.getTangent(f.progress);
+            const pos = f.curve.getPointAt(f.progress);
+            const tangent = f.curve.getTangentAt(f.progress).normalize();
 
             const worldPos = pos.clone().applyMatrix4(globeGroup.matrixWorld);
             const worldTangent = tangent.clone().transformDirection(globeGroup.matrixWorld);

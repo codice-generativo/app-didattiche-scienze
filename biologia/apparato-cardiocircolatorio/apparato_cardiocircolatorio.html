@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ripasso Apparato Cardiocircolatorio</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --panel: rgba(18, 22, 34, 0.9);
+      --panel-2: rgba(27, 34, 53, 0.92);
+      --text: #f5f7fb;
+      --muted: #c7d2e1;
+      --red: #d7263d;
+      --red-dark: #8e1123;
+      --blue: #1d6fd6;
+      --blue-dark: #11458a;
+      --ok: #32d27a;
+      --bad: #ffb4b4;
+      --shadow: 0 12px 30px rgba(0,0,0,0.35);
+      --radius: 22px;
+      --fontSize: 21px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: var(--fontSize);
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 14%, rgba(215,38,61,0.20) 0 90px, transparent 92px),
+        radial-gradient(circle at 88% 12%, rgba(29,111,214,0.18) 0 110px, transparent 112px),
+        radial-gradient(circle at 80% 84%, rgba(215,38,61,0.16) 0 80px, transparent 82px),
+        radial-gradient(circle at 16% 82%, rgba(29,111,214,0.17) 0 95px, transparent 97px),
+        linear-gradient(135deg, #0a0d14, #131926 45%, #0c1018 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.55;
+    }
+
+    body::before {
+      background:
+        radial-gradient(circle at 10% 8%, rgba(215,38,61,0.28) 0 6px, transparent 7px),
+        radial-gradient(circle at 14% 10%, rgba(215,38,61,0.22) 0 12px, transparent 13px),
+        radial-gradient(circle at 18% 6%, rgba(215,38,61,0.24) 0 7px, transparent 8px),
+        radial-gradient(circle at 87% 14%, rgba(29,111,214,0.22) 0 6px, transparent 7px),
+        radial-gradient(circle at 90% 10%, rgba(29,111,214,0.18) 0 14px, transparent 15px),
+        radial-gradient(circle at 82% 18%, rgba(29,111,214,0.2) 0 8px, transparent 9px),
+        radial-gradient(circle at 15% 85%, rgba(29,111,214,0.18) 0 10px, transparent 11px),
+        radial-gradient(circle at 85% 88%, rgba(215,38,61,0.25) 0 10px, transparent 11px);
+    }
+
+    body::after {
+      background:
+        linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.02) 100%),
+        radial-gradient(circle at 11% 11%, rgba(215,38,61,0.10) 0 34px, transparent 35px),
+        radial-gradient(circle at 88% 14%, rgba(29,111,214,0.08) 0 38px, transparent 39px);
+      mix-blend-mode: screen;
+    }
+
+    .app {
+      width: min(980px, 100%);
+      background: linear-gradient(180deg, rgba(15,19,30,0.96), rgba(15,18,28,0.92));
+      border: 2px solid rgba(255,255,255,0.08);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .app::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(215,38,61,0.09), transparent 28%),
+        radial-gradient(circle at 100% 0%, rgba(29,111,214,0.09), transparent 30%),
+        radial-gradient(circle at 100% 100%, rgba(215,38,61,0.06), transparent 26%),
+        radial-gradient(circle at 0% 100%, rgba(29,111,214,0.06), transparent 30%);
+      pointer-events: none;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      padding: 18px 22px;
+      background: linear-gradient(90deg, rgba(215,38,61,0.18), rgba(29,111,214,0.16));
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .title {
+      font-size: 30px;
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: 0.2px;
+    }
+
+    .subtitle {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .pill {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 18px;
+      white-space: nowrap;
+    }
+
+    .content {
+      padding: 26px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .hero {
+      display: grid;
+      gap: 20px;
+      text-align: left;
+    }
+
+    .hero-card {
+      background: linear-gradient(180deg, rgba(25,31,48,0.92), rgba(17,22,35,0.95));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: 34px;
+      line-height: 1.12;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .legend-item {
+      border-radius: 18px;
+      padding: 16px 18px;
+      font-weight: 700;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .legend-item.red { box-shadow: inset 0 0 0 2px rgba(215,38,61,0.25); }
+    .legend-item.blue { box-shadow: inset 0 0 0 2px rgba(29,111,214,0.25); }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      cursor: pointer;
+      border-radius: 16px;
+      font-size: 20px;
+      font-weight: 700;
+      font-family: inherit;
+      padding: 15px 20px;
+      transition: transform 0.15s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(1px) scale(0.99); }
+
+    .primary {
+      background: linear-gradient(135deg, var(--red), var(--blue));
+      color: white;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.28);
+    }
+
+    .secondary {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .quiz-head {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .progress-wrap {
+      display: grid;
+      gap: 10px;
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 16px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--red), var(--blue));
+      transition: width 0.35s ease;
+    }
+
+    .question-card {
+      background: linear-gradient(180deg, rgba(21,26,40,0.95), rgba(13,17,28,0.95));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+    }
+
+    .question-meta {
+      color: var(--muted);
+      margin-bottom: 10px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .question-text {
+      font-size: 28px;
+      line-height: 1.35;
+      font-weight: 700;
+      margin-bottom: 22px;
+    }
+
+    .answers {
+      display: grid;
+      gap: 14px;
+    }
+
+    .answer-btn {
+      text-align: left;
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 18px 18px;
+      line-height: 1.45;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .answer-btn::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 7px;
+      background: linear-gradient(180deg, rgba(215,38,61,0.8), rgba(29,111,214,0.8));
+      opacity: 0.8;
+    }
+
+    .answer-btn.correct {
+      background: rgba(50, 210, 122, 0.16);
+      border-color: rgba(50, 210, 122, 0.45);
+      box-shadow: inset 0 0 0 2px rgba(50,210,122,0.22);
+    }
+
+    .answer-btn.wrong {
+      background: rgba(215, 38, 61, 0.14);
+      border-color: rgba(255, 180, 180, 0.45);
+      box-shadow: inset 0 0 0 2px rgba(215,38,61,0.18);
+    }
+
+    .answer-btn:disabled {
+      opacity: 1;
+      cursor: default;
+    }
+
+    .feedback {
+      display: none;
+      margin-top: 22px;
+      padding: 18px;
+      border-radius: 18px;
+      line-height: 1.55;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.05);
+    }
+
+    .feedback.show { display: block; }
+    .feedback.ok { box-shadow: inset 0 0 0 2px rgba(50,210,122,0.2); }
+    .feedback.bad { box-shadow: inset 0 0 0 2px rgba(215,38,61,0.18); }
+
+    .feedback strong {
+      display: inline-block;
+      margin-bottom: 8px;
+      font-size: 22px;
+    }
+
+    .nav-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .result-card {
+      background: linear-gradient(180deg, rgba(21,26,40,0.96), rgba(13,17,28,0.98));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius);
+      padding: 26px;
+    }
+
+    .score-big {
+      font-size: 56px;
+      font-weight: 800;
+      margin: 6px 0 14px;
+      background: linear-gradient(90deg, #ffffff, #c7d2e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .summary-box {
+      border-radius: 18px;
+      padding: 18px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 700;
+    }
+
+    .summary-box small {
+      display: block;
+      color: var(--muted);
+      font-size: 16px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .review-list {
+      margin-top: 20px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .review-item {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .review-item .q {
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .review-item .a,
+    .review-item .u {
+      color: var(--muted);
+      margin-top: 4px;
+      line-height: 1.45;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .badge.ok { background: rgba(50,210,122,0.18); color: #baf2d1; }
+    .badge.bad { background: rgba(215,38,61,0.16); color: #ffd1d1; }
+
+    @media (max-width: 720px) {
+      .topbar, .content { padding: 18px; }
+      .title { font-size: 24px; }
+      .question-text { font-size: 24px; }
+      .hero h1 { font-size: 28px; }
+      .score-big { font-size: 46px; }
+      button { width: 100%; }
+      .actions, .nav-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div>
+        <div class="title">Ripasso Apparato Cardiocircolatorio</div>
+        <div class="subtitle">Quiz interattivo con feedback immediato</div>
+      </div>
+      <div class="stats">
+        <div class="pill" id="topScore">Punteggio 0</div>
+        <div class="pill" id="topLives">Domanda 0/0</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <section class="screen active" id="startScreen">
+        <div class="hero">
+          <div class="hero-card">
+            <h1>Metti alla prova ciò che sai su cuore sangue arterie vene e capillari</h1>
+            <p>
+              Scegli una risposta. Appena fai clic compare subito la soluzione corretta.
+              Il gioco usa un font molto leggibile e un audio di sottofondo generato dal browser.
+            </p>
+          </div>
+
+          <div class="legend">
+            <div class="legend-item red">Rosso: sangue ossigenato e arterie</div>
+            <div class="legend-item blue">Blu: sangue deossigenato e vene</div>
+          </div>
+
+          <div class="actions">
+            <button class="primary" id="startBtn">Inizia il gioco</button>
+            <button class="secondary" id="audioBtn">Audio attivo</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="quizScreen">
+        <div class="quiz-head">
+          <div class="progress-wrap">
+            <div class="hint" id="progressText">Domanda 1 di 12</div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="question-card">
+          <div class="question-meta" id="questionMeta">Livello base</div>
+          <div class="question-text" id="questionText"></div>
+          <div class="answers" id="answers"></div>
+          <div class="feedback" id="feedback"></div>
+          <div class="nav-row">
+            <div class="hint">La risposta corretta viene evidenziata subito dopo la scelta</div>
+            <button class="primary" id="nextBtn" disabled>Domanda successiva</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="resultScreen">
+        <div class="result-card">
+          <div class="question-meta">Risultato finale</div>
+          <div class="score-big" id="finalScore"></div>
+          <div id="finalMessage" style="line-height:1.5; color: var(--muted);"></div>
+
+          <div class="summary-grid">
+            <div class="summary-box"><small>Risposte corrette</small><span id="correctCount">0</span></div>
+            <div class="summary-box"><small>Risposte errate</small><span id="wrongCount">0</span></div>
+            <div class="summary-box"><small>Percentuale</small><span id="percentScore">0%</span></div>
+          </div>
+
+          <div class="actions" style="margin-top:20px;">
+            <button class="primary" id="restartBtn">Ricomincia</button>
+            <button class="secondary" id="toggleReviewBtn">Mostra riepilogo risposte</button>
+          </div>
+
+          <div class="review-list" id="reviewList" style="display:none"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const quizData = [
+      {
+        level: 'Base',
+        question: 'Qual è la funzione generale dell’apparato cardiovascolare?',
+        answers: [
+          'Produrre direttamente nutrienti per le cellule',
+          'Trasportare sostanze utili e di rifiuto tra sangue e tessuti',
+          'Fabbricare globuli rossi nel cuore',
+          'Assorbire ossigeno dall’aria senza i polmoni'
+        ],
+        correct: 1,
+        explanation: 'L’apparato cardiovascolare trasferisce nutrienti, gas respiratori, ormoni e scarti metabolici tra i vari tessuti del corpo.'
+      },
+      {
+        level: 'Base',
+        question: 'Dove avvengono gli scambi di sostanze tra sangue e cellule?',
+        answers: [
+          'Negli atri',
+          'Nelle valvole cardiache',
+          'Nei capillari',
+          'Nell’aorta'
+        ],
+        correct: 2,
+        explanation: 'I capillari hanno una parete sottilissima che permette gli scambi di gas, nutrienti e rifiuti con i tessuti.'
+      },
+      {
+        level: 'Base',
+        question: 'Il sangue ossigenato è in genere rappresentato con il colore',
+        answers: ['Blu', 'Rosso vivo', 'Verde', 'Nero'],
+        correct: 1,
+        explanation: 'Nei testi scolastici il sangue ricco di ossigeno è indicato in rosso, mentre quello deossigenato in blu.'
+      },
+      {
+        level: 'Intermedio',
+        question: 'Che cosa distingue una arteria da una vena?',
+        answers: [
+          'Il colore del sangue che contiene',
+          'La presenza di ossigeno o di anidride carbonica',
+          'La direzione del flusso rispetto al cuore',
+          'La temperatura del sangue'
+        ],
+        correct: 2,
+        explanation: 'Le arterie portano il sangue dal cuore alla periferia; le vene lo riportano dalla periferia al cuore.'
+      },
+      {
+        level: 'Intermedio',
+        question: 'Quale percorso appartiene alla circolazione polmonare?',
+        answers: [
+          'Ventricolo sinistro → aorta → tessuti → vene cave → atrio destro',
+          'Ventricolo destro → arteria polmonare → polmoni → vene polmonari → atrio sinistro',
+          'Atrio sinistro → arterie coronarie → miocardio → vene cave',
+          'Atrio destro → aorta → polmoni → atrio sinistro'
+        ],
+        correct: 1,
+        explanation: 'La circolazione polmonare parte dal ventricolo destro, raggiunge i polmoni e torna all’atrio sinistro con sangue riossigenato.'
+      },
+      {
+        level: 'Intermedio',
+        question: 'Quale cavità del cuore ha la parete più spessa?',
+        answers: ['Atrio destro', 'Atrio sinistro', 'Ventricolo destro', 'Ventricolo sinistro'],
+        correct: 3,
+        explanation: 'Il ventricolo sinistro deve pompare il sangue in tutta la circolazione sistemica, quindi ha un miocardio più spesso.'
+      },
+      {
+        level: 'Intermedio',
+        question: 'Durante la sistole ventricolare che cosa accade prima?',
+        answers: [
+          'Si aprono subito le valvole semilunari',
+          'Si chiudono le valvole atrioventricolari',
+          'Il sangue entra nelle vene cave',
+          'Si rilassano contemporaneamente i ventricoli'
+        ],
+        correct: 1,
+        explanation: 'All’inizio della sistole ventricolare aumenta la pressione nei ventricoli e si chiudono le valvole atrioventricolari per impedire il reflusso verso gli atri.'
+      },
+      {
+        level: 'Base',
+        question: 'Qual è la funzione principale dei globuli rossi?',
+        answers: [
+          'Produrre anticorpi',
+          'Trasportare ossigeno grazie all’emoglobina',
+          'Avviare la coagulazione',
+          'Digerire i nutrienti'
+        ],
+        correct: 1,
+        explanation: 'I globuli rossi contengono emoglobina, che lega l’ossigeno nei polmoni e lo rilascia ai tessuti.'
+      },
+      {
+        level: 'Base',
+        question: 'Quali cellule del sangue intervengono soprattutto nella difesa immunitaria?',
+        answers: ['Globuli bianchi', 'Piastrine', 'Globuli rossi', 'Valvole'],
+        correct: 0,
+        explanation: 'I globuli bianchi o leucociti partecipano alla difesa contro patogeni, cellule infette e cellule tumorali.'
+      },
+      {
+        level: 'Intermedio',
+        question: 'Le piastrine sono importanti perché',
+        answers: [
+          'trasportano l’ossigeno ai muscoli',
+          'formano il tappo iniziale nella coagulazione',
+          'producono il plasma',
+          'aprono e chiudono le valvole cardiache'
+        ],
+        correct: 1,
+        explanation: 'Le piastrine aderiscono alla lesione e rilasciano fattori della coagulazione che portano alla formazione del coagulo.'
+      },
+      {
+        level: 'Avanzato',
+        question: 'Perché le vene degli arti inferiori hanno valvole?',
+        answers: [
+          'Per aumentare la pressione del sangue più delle arterie',
+          'Per impedire al sangue di tornare indietro durante il ritorno al cuore',
+          'Per caricare il sangue di ossigeno',
+          'Per scambiare nutrienti con i tessuti'
+        ],
+        correct: 1,
+        explanation: 'Le valvole venose aiutano il ritorno del sangue al cuore, soprattutto contro la gravità, evitando il reflusso.'
+      },
+      {
+        level: 'Avanzato',
+        question: 'Quale affermazione sui capillari è corretta?',
+        answers: [
+          'Hanno pareti molto spesse per reggere alta pressione',
+          'Sono presenti solo nei polmoni',
+          'Hanno una parete sottilissima formata da un solo strato di cellule',
+          'Trasportano il sangue solo dal cuore ai tessuti'
+        ],
+        correct: 2,
+        explanation: 'I capillari sono i vasi più piccoli e la loro parete, formata da un solo strato di cellule, permette gli scambi con il liquido interstiziale.'
+      }
+    ];
+
+    const startScreen = document.getElementById('startScreen');
+    const quizScreen = document.getElementById('quizScreen');
+    const resultScreen = document.getElementById('resultScreen');
+
+    const startBtn = document.getElementById('startBtn');
+    const audioBtn = document.getElementById('audioBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const toggleReviewBtn = document.getElementById('toggleReviewBtn');
+
+    const questionMeta = document.getElementById('questionMeta');
+    const questionText = document.getElementById('questionText');
+    const answersEl = document.getElementById('answers');
+    const feedbackEl = document.getElementById('feedback');
+    const progressText = document.getElementById('progressText');
+    const progressFill = document.getElementById('progressFill');
+    const topScore = document.getElementById('topScore');
+    const topLives = document.getElementById('topLives');
+
+    const finalScore = document.getElementById('finalScore');
+    const finalMessage = document.getElementById('finalMessage');
+    const correctCount = document.getElementById('correctCount');
+    const wrongCount = document.getElementById('wrongCount');
+    const percentScore = document.getElementById('percentScore');
+    const reviewList = document.getElementById('reviewList');
+
+    let currentIndex = 0;
+    let score = 0;
+    let answered = false;
+    let userAnswers = [];
+    let audioEnabled = true;
+    let audioStarted = false;
+    let audioCtx;
+    let bgNodes = [];
+
+    function shuffle(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    let questions = shuffle(quizData);
+
+    function showScreen(screen) {
+      [startScreen, quizScreen, resultScreen].forEach(s => s.classList.remove('active'));
+      screen.classList.add('active');
+    }
+
+    function updateTopbar() {
+      topScore.textContent = `Punteggio ${score}`;
+      topLives.textContent = `Domanda ${Math.min(currentIndex + 1, questions.length)}/${questions.length}`;
+    }
+
+    function loadQuestion() {
+      answered = false;
+      nextBtn.disabled = true;
+      const q = questions[currentIndex];
+      questionMeta.textContent = `Livello ${q.level}`;
+      questionText.textContent = q.question;
+      feedbackEl.className = 'feedback';
+      feedbackEl.innerHTML = '';
+      answersEl.innerHTML = '';
+      progressText.textContent = `Domanda ${currentIndex + 1} di ${questions.length}`;
+      progressFill.style.width = `${(currentIndex / questions.length) * 100}%`;
+      updateTopbar();
+
+      q.answers.forEach((answer, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'answer-btn';
+        btn.innerHTML = `<strong>${String.fromCharCode(65 + index)}.</strong> ${answer}`;
+        btn.addEventListener('click', () => handleAnswer(index, btn));
+        answersEl.appendChild(btn);
+      });
+    }
+
+    function handleAnswer(selectedIndex, selectedBtn) {
+      if (answered) return;
+      answered = true;
+      const q = questions[currentIndex];
+      const buttons = [...document.querySelectorAll('.answer-btn')];
+      buttons.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === q.correct) btn.classList.add('correct');
+      });
+
+      const isCorrect = selectedIndex === q.correct;
+      if (!isCorrect) selectedBtn.classList.add('wrong');
+      if (isCorrect) score++;
+
+      userAnswers.push({
+        question: q.question,
+        correctAnswer: q.answers[q.correct],
+        userAnswer: q.answers[selectedIndex],
+        isCorrect,
+        explanation: q.explanation
+      });
+
+      feedbackEl.classList.add('show', isCorrect ? 'ok' : 'bad');
+      feedbackEl.innerHTML = `
+        <strong>${isCorrect ? 'Risposta corretta' : 'Risposta errata'}</strong><br>
+        Soluzione: <b>${q.answers[q.correct]}</b><br>
+        ${q.explanation}
+      `;
+
+      if (audioEnabled) {
+        if (isCorrect) playVictory();
+        else playWrong();
+      }
+
+      nextBtn.disabled = false;
+      updateTopbar();
+    }
+
+    function nextQuestion() {
+      currentIndex++;
+      if (currentIndex < questions.length) {
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function getMessage(percent) {
+      if (percent === 100) return 'Ripasso eccellente. Hai gestito molto bene concetti e lessico dell’apparato cardiocircolatorio.';
+      if (percent >= 80) return 'Ottimo risultato. Le basi sono solide e il lessico specifico è ben consolidato.';
+      if (percent >= 60) return 'Buon lavoro. Conviene ripassare ancora circolazione doppia ciclo cardiaco e componenti del sangue.';
+      return 'Serve un nuovo ripasso guidato. Concentrati su percorso del sangue funzioni dei vasi e composizione del sangue.';
+    }
+
+    function showResults() {
+      showScreen(resultScreen);
+      const total = questions.length;
+      const correct = score;
+      const wrong = total - correct;
+      const percent = Math.round((correct / total) * 100);
+
+      finalScore.textContent = `${correct} / ${total}`;
+      finalMessage.textContent = getMessage(percent);
+      correctCount.textContent = correct;
+      wrongCount.textContent = wrong;
+      percentScore.textContent = `${percent}%`;
+      topLives.textContent = `Completato ${total}/${total}`;
+      progressFill.style.width = '100%';
+
+      reviewList.innerHTML = userAnswers.map(item => `
+        <div class="review-item">
+          <div class="badge ${item.isCorrect ? 'ok' : 'bad'}">${item.isCorrect ? 'Corretta' : 'Da ripassare'}</div>
+          <div class="q">${item.question}</div>
+          <div class="u"><b>Tua risposta:</b> ${item.userAnswer}</div>
+          <div class="a"><b>Soluzione:</b> ${item.correctAnswer}</div>
+          <div class="a">${item.explanation}</div>
+        </div>
+      `).join('');
+    }
+
+    function restartGame() {
+      questions = shuffle(quizData);
+      currentIndex = 0;
+      score = 0;
+      answered = false;
+      userAnswers = [];
+      reviewList.style.display = 'none';
+      toggleReviewBtn.textContent = 'Mostra riepilogo risposte';
+      showScreen(startScreen);
+      updateTopbar();
+    }
+
+    function ensureAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function startBackgroundMusic() {
+      if (!audioEnabled) return;
+      ensureAudio();
+      if (audioStarted) return;
+      audioStarted = true;
+
+      const master = audioCtx.createGain();
+      master.gain.value = 0.035;
+      master.connect(audioCtx.destination);
+
+      const now = audioCtx.currentTime;
+      const notes = [174.61, 220.0, 261.63, 220.0];
+
+      notes.forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+        osc.frequency.value = freq;
+        gain.gain.value = 0.001;
+        osc.connect(gain);
+        gain.connect(master);
+        osc.start(now);
+        bgNodes.push({ osc, gain, freq, idx });
+      });
+
+      let step = 0;
+      function pulse() {
+        if (!audioEnabled || !audioCtx) return;
+        const t = audioCtx.currentTime;
+        bgNodes.forEach((node, i) => {
+          const factor = (i + step) % 4 === 0 ? 0.024 : 0.010;
+          node.gain.gain.cancelScheduledValues(t);
+          node.gain.gain.setValueAtTime(node.gain.gain.value, t);
+          node.gain.gain.linearRampToValueAtTime(factor, t + 0.18);
+          node.gain.gain.linearRampToValueAtTime(0.003, t + 1.0);
+          node.osc.frequency.setValueAtTime(node.freq * (1 + ((step % 8) - 4) * 0.002), t);
+        });
+        step++;
+        bgNodes.timer = setTimeout(pulse, 900);
+      }
+      pulse();
+    }
+
+    function stopBackgroundMusic() {
+      if (bgNodes.timer) clearTimeout(bgNodes.timer);
+      bgNodes.forEach(node => {
+        if (node.gain) {
+          try { node.gain.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.08); } catch(e) {}
+        }
+        if (node.osc) {
+          try { node.osc.stop(audioCtx.currentTime + 0.2); } catch(e) {}
+        }
+      });
+      bgNodes = [];
+      audioStarted = false;
+    }
+
+    function playTone(freq, duration, type = 'sine', volume = 0.08, delay = 0) {
+      ensureAudio();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      const start = audioCtx.currentTime + delay;
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, start);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.linearRampToValueAtTime(volume, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(start);
+      osc.stop(start + duration + 0.02);
+    }
+
+    function playVictory() {
+      playTone(523.25, 0.18, 'triangle', 0.06, 0.00);
+      playTone(659.25, 0.18, 'triangle', 0.06, 0.12);
+      playTone(783.99, 0.30, 'triangle', 0.07, 0.24);
+      playNoiseBurst(0.18, 0.015);
+    }
+
+    function playWrong() {
+      playTone(220.0, 0.16, 'sawtooth', 0.045, 0.00);
+      playTone(180.0, 0.20, 'sawtooth', 0.04, 0.08);
+    }
+
+    function playNoiseBurst(duration = 0.12, volume = 0.02) {
+      ensureAudio();
+      const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * duration, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < data.length; i++) {
+        data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+      }
+      const source = audioCtx.createBufferSource();
+      const gain = audioCtx.createGain();
+      source.buffer = buffer;
+      gain.gain.value = volume;
+      source.connect(gain);
+      gain.connect(audioCtx.destination);
+      source.start();
+    }
+
+    audioBtn.addEventListener('click', () => {
+      audioEnabled = !audioEnabled;
+      audioBtn.textContent = audioEnabled ? 'Audio attivo' : 'Audio disattivato';
+      if (!audioEnabled) stopBackgroundMusic();
+      else if (quizScreen.classList.contains('active') || startScreen.classList.contains('active')) startBackgroundMusic();
+    });
+
+    startBtn.addEventListener('click', () => {
+      showScreen(quizScreen);
+      startBackgroundMusic();
+      loadQuestion();
+    });
+
+    nextBtn.addEventListener('click', nextQuestion);
+    restartBtn.addEventListener('click', restartGame);
+
+    toggleReviewBtn.addEventListener('click', () => {
+      const visible = reviewList.style.display === 'grid';
+      reviewList.style.display = visible ? 'none' : 'grid';
+      toggleReviewBtn.textContent = visible ? 'Mostra riepilogo risposte' : 'Nascondi riepilogo risposte';
+    });
+
+    updateTopbar();
+  </script>
+</body>
+</html>

@@ -35,13 +35,19 @@
             font-family: 'DM Sans', sans-serif;
             background: var(--bg-dark);
             color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .map-stage {
+            position: relative;
+            min-height: 100svh;
             overflow: hidden;
-            height: 100vh;
+            background: var(--bg-dark);
         }
         
         /* Header */
         .header {
-            position: fixed;
+            position: absolute;
             top: 0;
             left: 0;
             right: 0;
@@ -99,7 +105,7 @@
         
         /* Map Container */
         #map {
-            position: fixed;
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
@@ -114,7 +120,7 @@
         
         /* Zoom controls */
         .leaflet-control-zoom {
-            position: fixed !important;
+            position: absolute !important;
             bottom: 230px !important;
             left: 20px !important;
             z-index: 1000 !important;
@@ -122,7 +128,7 @@
         
         /* Timeline Panel */
         .timeline-panel {
-            position: fixed;
+            position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
@@ -148,11 +154,11 @@
         
         .timeline-slider {
             width: 100%;
-            height: 8px;
+            height: 32px;
             -webkit-appearance: none;
             appearance: none;
-            background: var(--border-color);
-            border-radius: 4px;
+            background: linear-gradient(var(--border-color), var(--border-color)) center / 100% 8px no-repeat;
+            border-radius: 999px;
             outline: none;
             cursor: pointer;
         }
@@ -185,7 +191,7 @@
         
         .slider-progress {
             position: absolute;
-            top: 0;
+            top: 12px;
             left: 0;
             height: 8px;
             background: linear-gradient(90deg, var(--accent-yellow), var(--accent-orange));
@@ -272,11 +278,12 @@
             border-radius: 4px;
             font-size: 0.8rem;
             cursor: pointer;
+            min-height: 40px;
         }
         
         /* Legend */
         .legend {
-            position: fixed;
+            position: absolute;
             top: 20px;
             right: 20px;
             z-index: 1000;
@@ -409,22 +416,183 @@
             .header {
                 flex-direction: column;
                 gap: 12px;
+                padding: 14px 12px;
             }
             
             .stats-panel {
                 width: 100%;
                 justify-content: space-around;
+                gap: 8px;
+                padding: 10px 8px;
+            }
+
+            .stat-item {
+                min-width: 0;
+            }
+
+            .stat-value {
+                font-size: clamp(1rem, 5vw, 1.25rem);
+            }
+
+            .stat-label {
+                font-size: 0.62rem;
+                letter-spacing: 0.5px;
             }
             
             .title-block h1 {
                 font-size: 1.4rem;
             }
+
+            .title-block p {
+                font-size: clamp(0.9rem, 4vw, 1.05rem);
+            }
             
             .legend {
                 bottom: 200px;
                 right: 10px;
+                max-width: calc(100% - 20px);
                 padding: 12px;
             }
+
+            .timeline-panel {
+                padding: 14px 12px 18px;
+            }
+
+            .current-date {
+                font-size: 1.12rem;
+                margin-bottom: 12px;
+            }
+
+            .months-row {
+                gap: 4px;
+                margin-bottom: 12px;
+            }
+
+            .month-label {
+                font-size: clamp(0.58rem, 2.5vw, 0.72rem);
+            }
+
+            .controls-row {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .date-range {
+                font-size: 0.72rem;
+            }
+
+            .control-btn {
+                width: 42px;
+                height: 42px;
+            }
+
+            .control-btn.play-btn {
+                width: 50px;
+                height: 50px;
+            }
+
+            .speed-control {
+                width: 100%;
+                justify-content: center;
+                margin-left: 0;
+            }
+
+            .leaflet-control-zoom {
+                bottom: 218px !important;
+                left: 10px !important;
+            }
+
+            .map-stage {
+                min-height: auto;
+                overflow: visible;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .header,
+            #map,
+            .legend,
+            .timeline-panel {
+                position: relative;
+                top: auto;
+                right: auto;
+                bottom: auto;
+                left: auto;
+                width: auto;
+            }
+
+            .header { order: 1; background: var(--bg-dark); }
+            #map { order: 2; width: 100%; height: 55svh; min-height: 320px; }
+            .legend { order: 3; margin: 0 10px 10px; }
+            .timeline-panel { order: 4; }
+
+            .leaflet-control-zoom {
+                bottom: 16px !important;
+                left: 10px !important;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .header {
+                padding: 10px;
+                gap: 8px;
+            }
+
+            .stats-panel {
+                gap: 4px;
+                padding: 8px 6px;
+            }
+
+            .timeline-panel {
+                padding: 12px 10px 14px;
+            }
+
+            .legend {
+                bottom: 190px;
+                right: 8px;
+                padding: 10px;
+            }
+
+            .legend-text {
+                font-size: 0.74rem;
+            }
+        }
+
+        .home-nav {
+            display: flex;
+            justify-content: center;
+            padding: 22px 16px 28px;
+            background: var(--bg-dark);
+        }
+
+        .home-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: min(360px, 100%);
+            min-height: 48px;
+            padding: 13px 18px;
+            border: 1px solid rgba(255, 107, 53, 0.42);
+            border-radius: 8px;
+            background: rgba(255, 107, 53, 0.14);
+            color: var(--text-primary);
+            font-size: 0.96rem;
+            font-weight: 700;
+            line-height: 1.2;
+            text-align: center;
+            text-decoration: none;
+            transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+        }
+
+        .home-button:hover {
+            background: rgba(255, 107, 53, 0.24);
+            border-color: rgba(255, 107, 53, 0.72);
+            transform: translateY(-1px);
+        }
+
+        .home-button:focus-visible {
+            outline: 3px solid var(--accent-yellow);
+            outline-offset: 4px;
         }
     </style>
 </head>
@@ -434,6 +602,8 @@
         <div class="loading-spinner"></div>
         <p class="loading-text">Caricamento dati sismici...</p>
     </div>
+
+    <main class="map-stage" aria-label="Visualizzazione animata dei terremoti in Italia nel 2024">
     
     <!-- Header -->
     <header class="header">
@@ -525,6 +695,11 @@
             </div>
         </div>
     </div>
+    </main>
+
+    <nav class="home-nav" aria-label="Navigazione principale">
+        <a class="home-button" href="../../index.html">Torna alla pagina principale</a>
+    </nav>
     
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

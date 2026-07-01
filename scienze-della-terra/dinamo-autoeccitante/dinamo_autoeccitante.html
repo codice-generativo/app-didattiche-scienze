@@ -5,12 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modello Dinamo Terrestre 3D - Pannello di Controllo</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            background-color: #010101;
+        }
+
         body {
             margin: 0;
-            overflow: hidden;
+            min-height: 100vh;
             background-color: #010101;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: white;
+        }
+
+        #scene-stage {
+            position: relative;
+            min-height: 0;
+            overflow: visible;
+            background-color: #010101;
+        }
+
+        #scene-stage canvas {
+            display: block;
+            width: 100% !important;
+            max-width: 100%;
+            height: min(72svh, 720px) !important;
+            min-height: 420px;
         }
 
         #ui-overlay {
@@ -18,14 +41,14 @@
             top: 20px;
             left: 20px;
             pointer-events: none;
-            max-width: 340px;
+            width: min(340px, calc(100% - 40px));
             background: rgba(0, 0, 0, 0.9);
             padding: 20px;
             border-radius: 15px;
             border: 1px solid rgba(255, 235, 59, 0.2);
             backdrop-filter: blur(12px);
             z-index: 10;
-            max-height: 90vh;
+            max-height: calc(min(72svh, 720px) - 40px);
             overflow-y: auto;
         }
 
@@ -68,7 +91,15 @@
 
         input[type="range"] {
             width: 100%;
+            min-height: 32px;
             cursor: pointer;
+            accent-color: #ffeb3b;
+        }
+
+        input[type="checkbox"] {
+            width: 40px;
+            height: 40px;
+            flex: 0 0 auto;
             accent-color: #ffeb3b;
         }
 
@@ -94,20 +125,99 @@
             font-size: 0.9rem;
             letter-spacing: 3px;
         }
+
+        .home-nav {
+            display: flex;
+            justify-content: center;
+            padding: 28px 16px 34px;
+            background: #010101;
+            position: relative;
+            z-index: 1;
+        }
+
+        .home-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: min(340px, 100%);
+            min-height: 48px;
+            padding: 13px 18px;
+            border: 1px solid rgba(255, 235, 59, 0.34);
+            border-radius: 12px;
+            background: rgba(255, 235, 59, 0.12);
+            color: #ffeb3b;
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-align: center;
+            text-decoration: none;
+            transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+        }
+
+        .home-button:hover {
+            background: rgba(255, 235, 59, 0.2);
+            border-color: rgba(255, 235, 59, 0.62);
+            transform: translateY(-1px);
+        }
+
+        .home-button:focus-visible {
+            outline: 3px solid #fff59d;
+            outline-offset: 4px;
+        }
+
+        @media (max-width: 560px) {
+            #ui-overlay {
+                top: 12px;
+                left: 12px;
+                width: calc(100% - 24px);
+                position: static;
+                order: 2;
+                max-height: none;
+                overflow: visible;
+                margin: 0;
+                padding: 14px;
+                border-radius: 0;
+            }
+
+            #scene-stage {
+                min-height: auto;
+                display: flex;
+                flex-direction: column;
+            }
+
+            #scene-stage canvas {
+                order: 1;
+                height: 58svh !important;
+                min-height: 300px;
+            }
+
+            h1 {
+                font-size: clamp(0.95rem, 5vw, 1.1rem);
+            }
+
+            .controls {
+                gap: 10px;
+            }
+
+            .slider-label,
+            .toggle-container {
+                font-size: 0.8rem;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div id="loading">INIZIALIZZAZIONE STRUMENTI DI MISURA...</div>
 
+<main id="scene-stage" aria-label="Simulazione 3D della geodinamo">
 <div id="ui-overlay">
     <h1>Controllo Geodinamo</h1>
-    
+
     <div class="controls">
         <!-- Controllo Nucleo Esterno -->
         <div class="control-group">
             <label class="toggle-container">
-                <input type="checkbox" id="toggleOuterCore" checked> 
+                <input type="checkbox" id="toggleOuterCore" checked>
                 <span>Visualizza Nucleo Esterno</span>
             </label>
             <div style="margin-top:10px;">
@@ -120,7 +230,7 @@
         <div class="control-group">
             <div class="slider-label">Spessore Linee Flusso: <span id="val-thickness">1.0</span></div>
             <input type="range" id="thicknessRange" min="0.1" max="5" step="0.1" value="1">
-            
+
             <div class="slider-label" style="margin-top:8px;">Velocità Vettori: <span id="val-fieldSpeed">1.0</span></div>
             <input type="range" id="fieldSpeedRange" min="0" max="5" step="0.1" value="1">
 
@@ -132,12 +242,17 @@
         <div class="control-group">
             <div class="slider-label">Scala Flussi Convettivi: <span id="val-spiralSize">1.0</span></div>
             <input type="range" id="spiralSizeRange" min="0.5" max="2.5" step="0.1" value="1">
-            
+
             <div class="slider-label" style="margin-top:8px;">Rotazione Globale: <span id="val-rotSpeed">1.0</span></div>
             <input type="range" id="speedRange" min="0" max="4" step="0.1" value="1">
         </div>
     </div>
 </div>
+</main>
+
+<nav class="home-nav" aria-label="Navigazione principale">
+    <a class="home-button" href="../../index.html">Torna alla pagina principale</a>
+</nav>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -146,7 +261,7 @@
     let scene, camera, renderer, controls;
     let globeGroup, outerCoreGroup, spiralGroup;
     let spirals = [], fieldLines = [], coreLayers = [];
-    
+
     // Parametri dinamici
     const params = {
         rotationSpeed: 0.005,
@@ -163,9 +278,9 @@
         camera.position.set(25, 20, 30);
 
         renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
-        document.body.appendChild(renderer.domElement);
+        document.getElementById('scene-stage').appendChild(renderer.domElement);
+        onWindowResize();
 
         controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
@@ -183,10 +298,10 @@
 
         createModel();
         setupUI();
-        
+
         window.addEventListener('resize', onWindowResize);
         document.getElementById('loading').style.display = 'none';
-        
+
         animate();
     }
 
@@ -204,7 +319,7 @@
         for (let i = 0; i < numLayers; i++) {
             const t = i / (numLayers - 1);
             const radius = 2.6 + (8.5 - 2.6) * t;
-            const opacity = 0.07 * Math.pow(1 - t, 1.8); 
+            const opacity = 0.07 * Math.pow(1 - t, 1.8);
 
             const layerGeo = new THREE.SphereGeometry(radius, 32, 32);
             const layerMat = new THREE.MeshBasicMaterial({
@@ -281,13 +396,13 @@
             const coneMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 });
             const vector = new THREE.Mesh(coneGeo, coneMat);
             scene.add(vector);
-            
-            fieldLines.push({ 
+
+            fieldLines.push({
                 line, // Riferimento per spessore/opacità
-                curve, 
-                vector, 
-                progress: Math.random(), 
-                speed: 0.0015 + Math.random() * 0.001 
+                curve,
+                vector,
+                progress: Math.random(),
+                speed: 0.0015 + Math.random() * 0.001
             });
         }
     }
@@ -334,9 +449,11 @@
     }
 
     function onWindowResize() {
-        camera.aspect = window.innerWidth / window.innerHeight;
+        const width = renderer.domElement.clientWidth || window.innerWidth;
+        const height = renderer.domElement.clientHeight || window.innerHeight;
+        camera.aspect = width / height;
         camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setSize(width, height, false);
     }
 
     function animate() {
@@ -362,12 +479,12 @@
 
             const pos = f.curve.getPoint(f.progress);
             const tangent = f.curve.getTangent(f.progress);
-            
+
             const worldPos = pos.clone().applyMatrix4(globeGroup.matrixWorld);
             const worldTangent = tangent.clone().transformDirection(globeGroup.matrixWorld);
-            
+
             f.vector.position.copy(worldPos);
-            
+
             const lookAtTarget = worldPos.clone().add(worldTangent);
             f.vector.lookAt(lookAtTarget);
             f.vector.rotateX(Math.PI / 2);

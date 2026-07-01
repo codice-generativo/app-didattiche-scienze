@@ -3,40 +3,66 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Agenda 2030 | Applicazioni didattiche di Scienze</title>
-
   <link rel="stylesheet" href="../style.css">
 </head>
-
 <body>
-  <header>
-    <h1>Agenda 2030</h1>
-    <p>
-      Applicazioni interattive dedicate agli Obiettivi di sviluppo sostenibile,
-      alla cittadinanza e all’educazione ambientale.
-    </p>
+  <header class="site-header category-header">
+    <div class="container header-content">
+      <nav class="breadcrumb" aria-label="Percorso">
+        <a href="../index.html">Home</a>
+        <span aria-hidden="true">/</span>
+        <span>Agenda 2030</span>
+      </nav>
+      <p class="eyebrow">Applicazioni didattiche di Scienze</p>
+      <h1>Agenda 2030</h1>
+      <p class="lead">
+        Attivit&agrave; e quiz interattivi dedicati ai 17 Obiettivi di sviluppo sostenibile.
+      </p>
+      <p class="category-meta">2 attivit&agrave; disponibili</p>
+    </div>
   </header>
 
   <main>
-    <h2>Attività disponibili</h2>
-    <p><ul>
-  <li>
-    <a href="go-goals-sdg/">
-     Obiettivi Agenda 2030 
-    </a>
-  </li>
-  <li>
-    <a href="quiz-agenda-2030/">
-     Game Agenda 2030
-    </a>
-  </li>
-</ul>
-  </p>
+    <section class="container section" aria-labelledby="activities-title">
+      <div class="section-heading">
+        <h2 id="activities-title">Attivit&agrave; disponibili</h2>
+      </div>
 
-    <p>
-      <a href="../index.html">Torna alla pagina principale</a>
-    </p>
+      <div class="activity-grid">
+        <article class="card card--lime">
+          <div class="card-body">
+            <span class="badge">Applicazione interattiva</span>
+            <h3>Go Goals &ndash; SDG Interactive</h3>
+            <p>
+              Attivit&agrave; interattiva per conoscere i 17 Obiettivi di sviluppo sostenibile e le principali sfide globali.
+            </p>
+          </div>
+          <a class="button-link" href="go-goals-sdg/index.html">Apri attivit&agrave;</a>
+        </article>
+
+        <article class="card card--lime">
+          <div class="card-body">
+            <span class="badge">Quiz interattivo</span>
+            <h3>Quiz Agenda 2030</h3>
+            <p>
+              Quiz per verificare le conoscenze sugli obiettivi ambientali, sociali ed economici dell&rsquo;Agenda 2030.
+            </p>
+          </div>
+          <a class="button-link" href="quiz-agenda-2030/index.html">Apri attivit&agrave;</a>
+        </article>
+      </div>
+
+      <nav class="return-nav" aria-label="Navigazione di ritorno">
+        <a class="button-link" href="../index.html">Torna alla home</a>
+      </nav>
+    </section>
   </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Amalia Bonanno &middot; Applicazioni didattiche di Scienze &middot; A.S. 2025/2026</p>
+    </div>
+  </footer>
 </body>
 </html>

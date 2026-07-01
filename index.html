@@ -2,27 +2,91 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Applicazioni didattiche di Scienze</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <header class="site-header">
+    <div class="container header-content">
+      <p class="eyebrow">Archivio didattico digitale</p>
+      <h1>Applicazioni didattiche di Scienze</h1>
+      <p class="lead">
+        Simulazioni, quiz e risorse interattive per esplorare, comprendere e consolidare i contenuti scientifici.
+      </p>
+    </div>
+  </header>
 
-  <h1>Applicazioni didattiche di Scienze</h1>
+  <main>
+    <section class="container section" aria-labelledby="discipline-title">
+      <div class="section-heading">
+        <h2 id="discipline-title">Seleziona un&rsquo;area disciplinare</h2>
+      </div>
 
-  <p>
-    Raccolta di strumenti interattivi per lezioni, ripasso,
-    attività laboratoriali e percorsi di scienze.
-  </p>
+      <div class="card-grid">
+        <article class="card card--violet">
+          <div class="card-body">
+            <span class="activity-count">3 attivit&agrave;</span>
+            <h3>Chimica</h3>
+            <p>
+              Simulazioni e attivit&agrave; interattive dedicate ad atomi, molecole, isotopi e struttura della materia.
+            </p>
+          </div>
+          <a class="button-link" href="chimica/index.html">Esplora Chimica</a>
+        </article>
 
-  <h2>Applicazioni disponibili</h2>
+        <article class="card card--teal">
+          <div class="card-body">
+            <span class="activity-count">3 attivit&agrave;</span>
+            <h3>Biologia</h3>
+            <p>
+              Risorse interattive per lo studio delle biomolecole e dell&rsquo;apparato cardiocircolatorio.
+            </p>
+          </div>
+          <a class="button-link" href="biologia/index.html">Esplora Biologia</a>
+        </article>
 
-  <ul>
-    <li><a href="terremoti/">Terremoti</a></li>
-    <li><a href="#">Vulcani</a></li>
-    <li><a href="#">Tavola periodica</a></li>
-    <li><a href="#">Genetica</a></li>
-    <li><a href="#">Minerali e rocce</a></li>
-  </ul>
+        <article class="card card--indigo">
+          <div class="card-body">
+            <span class="activity-count">3 attivit&agrave;</span>
+            <h3>Scienze della Terra</h3>
+            <p>
+              Applicazioni dedicate al campo magnetico terrestre, alle rocce, ai minerali e alla sismicit&agrave; italiana.
+            </p>
+          </div>
+          <a class="button-link" href="scienze-della-terra/index.html">Esplora Scienze della Terra</a>
+        </article>
 
+        <article class="card card--lime">
+          <div class="card-body">
+            <span class="activity-count">2 attivit&agrave;</span>
+            <h3>Agenda 2030</h3>
+            <p>
+              Quiz e attivit&agrave; interattive per conoscere gli Obiettivi di sviluppo sostenibile.
+            </p>
+          </div>
+          <a class="button-link" href="agenda-2030/index.html">Esplora Agenda 2030</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="container info-section" aria-labelledby="project-title">
+      <h2 id="project-title">Il progetto</h2>
+      <p>
+        Raccolta curata da Amalia Bonanno nell&rsquo;ambito dell&rsquo;anno di formazione e prova 2025/2026, relativo al
+        passaggio di ruolo nella scuola secondaria di secondo grado. Il sito riunisce applicazioni e risorse
+        interattive di Scienze utilizzate a supporto delle attivit&agrave; didattiche svolte durante l&rsquo;anno scolastico.
+        Le applicazioni originali, ad eccezione delle simulazioni PhET, sono state sviluppate mediante un approccio di
+        vibe coding, con supervisione, verifica e revisione dei contenuti da parte dell&rsquo;autrice. Le risorse esterne
+        mantengono l&rsquo;attribuzione e la licenza dei rispettivi autori.
+      </p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Amalia Bonanno &middot; Applicazioni didattiche di Scienze &middot; A.S. 2025/2026</p>
+    </div>
+  </footer>
 </body>
 </html>

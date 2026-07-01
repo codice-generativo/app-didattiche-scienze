@@ -3,57 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <meta
-    name="description"
-    content="Applicazione interattiva dedicata ai 17 Obiettivi di sviluppo sostenibile dell’Agenda 2030."
-  >
-
-  <title>Go Goals – Agenda 2030</title>
-
+  <meta name="description" content="Attivita interattiva per conoscere i 17 Obiettivi di sviluppo sostenibile e riflettere sulle principali sfide ambientali, sociali ed economiche.">
+  <title>Go Goals - SDG Interactive | Agenda 2030</title>
   <link rel="stylesheet" href="../../style.css">
 </head>
-
 <body>
-  <header>
-    <p>
-      <a href="../index.html">Agenda 2030</a>
-      <span aria-hidden="true"> / </span>
-      Go Goals
-    </p>
-
-    <h1>Go Goals – SDG Interactive</h1>
-
-    <p>
-      Attività interattiva per conoscere i 17 Obiettivi di sviluppo sostenibile
-      e riflettere sulle principali sfide ambientali, sociali ed economiche.
-    </p>
+  <header class="site-header activity-header">
+    <div class="container header-content">
+      <nav class="breadcrumb" aria-label="Percorso">
+        <a href="../../index.html">Home</a>
+        <span aria-hidden="true">/</span>
+        <a href="../index.html">Agenda 2030</a>
+        <span aria-hidden="true">/</span>
+        <span>Go Goals &ndash; SDG Interactive</span>
+      </nav>
+      <p class="eyebrow">Applicazioni didattiche di Scienze</p>
+      <h1>Go Goals &ndash; SDG Interactive</h1>
+      <p class="lead">
+        Attivit&agrave; interattiva per conoscere i 17 Obiettivi di sviluppo sostenibile e riflettere sulle principali sfide
+        ambientali, sociali ed economiche.
+      </p>
+      <p class="category-meta">Applicazione interattiva</p>
+    </div>
   </header>
 
   <main>
-    <section>
-      <h2>Avvia l’applicazione</h2>
+    <section class="container section card--lime" aria-labelledby="actions-title">
+      <div class="activity-layout">
+        <div class="activity-panel">
+          <h2 id="actions-title">Cosa puoi fare</h2>
+          <ul class="action-list">
+            <li>Esplorare i 17 Obiettivi di sviluppo sostenibile.</li>
+            <li>Collegare obiettivi e sfide globali.</li>
+            <li>Verificare le conoscenze attraverso attivit&agrave; interattive.</li>
+          </ul>
+        </div>
 
-      <p>
-        Esplora gli obiettivi dell’Agenda 2030 e verifica le conoscenze
-        attraverso domande e attività interattive.
-      </p>
+        <aside class="activity-panel" aria-label="Avvio dell'applicazione">
+          <span class="badge">Applicazione interattiva</span>
+          <a class="button-link primary-action" href="GoGoals_SDG_Interactive.html" target="_blank" rel="noopener noreferrer">
+            Avvia l&rsquo;applicazione
+          </a>
+        </aside>
+      </div>
 
-      <p>
-        <a
-          href="GoGoals_SDG_Interactive.html"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Apri Go Goals
-        </a>
-      </p>
+      <section class="source-section" aria-labelledby="note-title">
+        <h2 id="note-title">Nota</h2>
+        <p>
+          Applicazione originale sviluppata mediante un approccio di vibe coding, con supervisione, verifica e revisione
+          dei contenuti da parte dell&rsquo;autrice.
+        </p>
+      </section>
+
+      <nav class="return-nav" aria-label="Navigazione di ritorno">
+        <a class="button-link" href="../index.html">Torna ad Agenda 2030</a>
+        <a class="button-link" href="../../index.html">Torna alla home</a>
+      </nav>
     </section>
-
-    <nav aria-label="Navigazione">
-      <p><a href="../index.html">Torna ad Agenda 2030</a></p>
-      <p><a href="../../index.html">Torna alla pagina principale</a></p>
-    </nav>
   </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Amalia Bonanno &middot; Applicazioni didattiche di Scienze &middot; A.S. 2025/2026</p>
+    </div>
+  </footer>
 </body>
 </html>

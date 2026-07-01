@@ -343,6 +343,42 @@
   }
   .music-btn:hover { border-color:var(--mineral-gold); color:var(--mineral-gold); }
 
+
+  .home-nav {
+    display: flex;
+    justify-content: center;
+    padding: 22px 16px 32px;
+    position: relative;
+    z-index: 10;
+  }
+
+  .home-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: min(360px, 100%);
+    min-height: 48px;
+    padding: 13px 18px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: rgba(212, 175, 55, 0.12);
+    color: var(--mineral-gold);
+    font-family: 'Cinzel', serif;
+    font-weight: 800;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    transition: transform 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+  }
+
+  .home-button:hover {
+    border-color: var(--mineral-gold);
+    background: rgba(212, 175, 55, 0.22);
+    transform: translateY(-1px);
+  }
+
+  .home-button:focus-visible { outline: 3px solid var(--crystal-teal); outline-offset: 4px; }
+
   /* Responsive */
   @media(max-width:600px){
     .question-text { font-size:17px; }
@@ -480,6 +516,10 @@
     <button class="btn-secondary" onclick="goToMenu()">Menu Principale</button>
   </div>
 </div>
+
+<nav class="home-nav" aria-label="Navigazione principale">
+  <a class="home-button" href="../../index.html">Torna alla pagina principale</a>
+</nav>
 
 <script>
 // ============================================================

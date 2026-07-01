@@ -1,64 +1,70 @@
 <!DOCTYPE html>
 <html lang="it">
-<head> 
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <meta
-    name="description"
-    content="Quiz didattico multilingue dedicato alle principali biomolecole."
-  >
-
+  <meta name="description" content="Attivita interattiva multilingue per verificare e consolidare le conoscenze sulle principali biomolecole.">
   <title>Quiz sulle biomolecole | Biologia</title>
-
   <link rel="stylesheet" href="../../style.css">
 </head>
-
 <body>
-  <header>
-    <p>
-      <a href="../index.html">Biologia</a>
-      <span aria-hidden="true"> / </span>
-      Quiz sulle biomolecole
-    </p>
-
-    <h1>Quiz sulle biomolecole</h1>
-
-    <p>
-      Attività interattiva multilingue per verificare e consolidare
-      le conoscenze sulle principali biomolecole.
-    </p>
+  <header class="site-header activity-header">
+    <div class="container header-content">
+      <nav class="breadcrumb" aria-label="Percorso">
+        <a href="../../index.html">Home</a>
+        <span aria-hidden="true">/</span>
+        <a href="../index.html">Biologia</a>
+        <span aria-hidden="true">/</span>
+        <span>Quiz sulle biomolecole</span>
+      </nav>
+      <p class="eyebrow">Applicazioni didattiche di Scienze</p>
+      <h1>Quiz sulle biomolecole</h1>
+      <p class="lead">
+        Attivit&agrave; interattiva multilingue per verificare e consolidare le conoscenze sulle principali biomolecole.
+      </p>
+      <p class="category-meta">Quiz interattivo</p>
+    </div>
   </header>
 
   <main>
-    <section>
-      <h2>Avvia il quiz</h2>
+    <section class="container section card--teal" aria-labelledby="actions-title">
+      <div class="activity-layout">
+        <div class="activity-panel">
+          <h2 id="actions-title">Cosa puoi fare</h2>
+          <ul class="action-list">
+            <li>Verificare le conoscenze su carboidrati, lipidi, proteine e acidi nucleici.</li>
+            <li>Utilizzare pi&ugrave; lingue.</li>
+            <li>Ricevere un riscontro immediato sulle risposte.</li>
+          </ul>
+        </div>
 
-      <p>
-        Rispondi alle domande su carboidrati, lipidi, proteine e acidi nucleici
-        e verifica immediatamente le risposte.
-      </p>
+        <aside class="activity-panel" aria-label="Avvio del quiz">
+          <span class="badge">Quiz interattivo</span>
+          <a class="button-link primary-action" href="quiz_biomolecole_multilingua.html" target="_blank" rel="noopener noreferrer">
+            Avvia il quiz
+          </a>
+        </aside>
+      </div>
 
-      <p>
-        <a
-          href="quiz_biomolecole_multilingua.html"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Apri il quiz sulle biomolecole
-        </a>
-      </p>
+      <section class="source-section" aria-labelledby="note-title">
+        <h2 id="note-title">Nota</h2>
+        <p>
+          Applicazione originale sviluppata mediante un approccio di vibe coding, con supervisione, verifica e revisione
+          dei contenuti da parte dell&rsquo;autrice.
+        </p>
+      </section>
+
+      <nav class="return-nav" aria-label="Navigazione di ritorno">
+        <a class="button-link" href="../index.html">Torna a Biologia</a>
+        <a class="button-link" href="../../index.html">Torna alla home</a>
+      </nav>
     </section>
-
-    <nav aria-label="Navigazione">
-      <p>
-        <a href="../index.html">Torna a Biologia</a>
-      </p>
-
-      <p>
-        <a href="../../index.html">Torna alla pagina principale</a>
-      </p>
-    </nav>
   </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Amalia Bonanno &middot; Applicazioni didattiche di Scienze &middot; A.S. 2025/2026</p>
+    </div>
+  </footer>
 </body>
 </html>

@@ -6,35 +6,74 @@
   <title>Chimica | Applicazioni didattiche di Scienze</title>
   <link rel="stylesheet" href="../style.css">
 </head>
-
 <body>
-  <header>
-    <h1>Chimica</h1>
-    <p>Applicazioni interattive per lo studio della chimica.</p>
+  <header class="site-header category-header">
+    <div class="container header-content">
+      <nav class="breadcrumb" aria-label="Percorso">
+        <a href="../index.html">Home</a>
+        <span aria-hidden="true">/</span>
+        <span>Chimica</span>
+      </nav>
+      <p class="eyebrow">Applicazioni didattiche di Scienze</p>
+      <h1>Chimica</h1>
+      <p class="lead">
+        Simulazioni interattive dedicate alla struttura della materia, agli atomi, alle molecole e agli isotopi.
+      </p>
+      <p class="category-meta">3 attivit&agrave; disponibili</p>
+    </div>
   </header>
 
   <main>
-    <h2>Attività disponibili</h2>
-<ul>
-  <li>
-    <a href="costruisci-un-atomo/">
-      Costruisci un atomo
-    </a>
-  </li>
-  <li>
-    <a href="costruisci-una-molecola/">
-      Costruisci una molecola
-    </a>
-  </li>
-  <li>
-    <a href="isotopi-e-massa-atomica/">
-      Isotopi e massa atomica
-    </a>
-  </li>
-</ul>
-    <p>
-      <a href="../index.html">Torna alla pagina principale</a>
-    </p>
+    <section class="container section" aria-labelledby="activities-title">
+      <div class="section-heading">
+        <h2 id="activities-title">Attivit&agrave; disponibili</h2>
+      </div>
+
+      <div class="activity-grid">
+        <article class="card card--violet">
+          <div class="card-body">
+            <span class="badge">Simulazione PhET</span>
+            <h3>Costruisci un atomo</h3>
+            <p>
+              Simulazione per esplorare protoni, neutroni, elettroni, numero atomico, numero di massa e carica.
+            </p>
+          </div>
+          <a class="button-link" href="costruisci-un-atomo/index.html">Apri attivit&agrave;</a>
+        </article>
+
+        <article class="card card--violet">
+          <div class="card-body">
+            <span class="badge">Simulazione PhET</span>
+            <h3>Costruisci una molecola</h3>
+            <p>
+              Simulazione per costruire molecole e riconoscere formule e rappresentazioni molecolari.
+            </p>
+          </div>
+          <a class="button-link" href="costruisci-una-molecola/index.html">Apri attivit&agrave;</a>
+        </article>
+
+        <article class="card card--violet">
+          <div class="card-body">
+            <span class="badge">Simulazione PhET</span>
+            <h3>Isotopi e massa atomica</h3>
+            <p>
+              Simulazione per comprendere isotopi, abbondanza relativa e massa atomica media.
+            </p>
+          </div>
+          <a class="button-link" href="isotopi-e-massa-atomica/index.html">Apri attivit&agrave;</a>
+        </article>
+      </div>
+
+      <nav class="return-nav" aria-label="Navigazione di ritorno">
+        <a class="button-link" href="../index.html">Torna alla home</a>
+      </nav>
+    </section>
   </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Amalia Bonanno &middot; Applicazioni didattiche di Scienze &middot; A.S. 2025/2026</p>
+    </div>
+  </footer>
 </body>
 </html>

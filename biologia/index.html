@@ -3,39 +3,77 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Biologia | Applicazioni didattiche di Scienze</title>
-
   <link rel="stylesheet" href="../style.css">
 </head>
-
 <body>
-  <header>
-    <h1>Biologia</h1>
-    <p>Applicazioni interattive per lo studio della biologia.</p>
+  <header class="site-header category-header">
+    <div class="container header-content">
+      <nav class="breadcrumb" aria-label="Percorso">
+        <a href="../index.html">Home</a>
+        <span aria-hidden="true">/</span>
+        <span>Biologia</span>
+      </nav>
+      <p class="eyebrow">Applicazioni didattiche di Scienze</p>
+      <h1>Biologia</h1>
+      <p class="lead">
+        Applicazioni e quiz interattivi dedicati alle biomolecole e all&rsquo;apparato cardiocircolatorio.
+      </p>
+      <p class="category-meta">3 attivit&agrave; disponibili</p>
+    </div>
   </header>
+
   <main>
-    <h2>Attività disponibili</h2>
-<ul>
-  <li>
-    <a href="apparato-cardiocircolatorio/">
-      Game Apparato Cardiocircolatorio
-    </a>
-  </li>
-  <li>
-    <a href="quiz-biomolecole-multilingua/">
-      Quiz sulle biomolecole
-    </a>
-  </li>
-  <li>
-    <a href="quiz-cardiocircolatorio/">
-      Quiz Splatter
-    </a>
-  </li>
-</ul>
-    <p>
-      <a href="../index.html">Torna alla pagina principale</a>
-    </p>
+    <section class="container section" aria-labelledby="activities-title">
+      <div class="section-heading">
+        <h2 id="activities-title">Attivit&agrave; disponibili</h2>
+      </div>
+
+      <div class="activity-grid">
+        <article class="card card--teal">
+          <div class="card-body">
+            <span class="badge">Applicazione interattiva</span>
+            <h3>Apparato cardiocircolatorio</h3>
+            <p>
+              Applicazione interattiva per approfondire struttura e funzionamento dell&rsquo;apparato cardiocircolatorio.
+            </p>
+          </div>
+          <a class="button-link" href="apparato-cardiocircolatorio/index.html">Apri attivit&agrave;</a>
+        </article>
+
+        <article class="card card--teal">
+          <div class="card-body">
+            <span class="badge">Quiz interattivo</span>
+            <h3>Quiz sulle biomolecole</h3>
+            <p>
+              Quiz multilingue per verificare e consolidare le conoscenze sulle principali biomolecole.
+            </p>
+          </div>
+          <a class="button-link" href="quiz-biomolecole-multilingua/index.html">Apri attivit&agrave;</a>
+        </article>
+
+        <article class="card card--teal">
+          <div class="card-body">
+            <span class="badge">Quiz interattivo</span>
+            <h3>Quiz sull&rsquo;apparato cardiocircolatorio</h3>
+            <p>
+              Quiz per verificare le conoscenze su cuore, vasi sanguigni, circolazione e sangue.
+            </p>
+          </div>
+          <a class="button-link" href="quiz-cardiocircolatorio/index.html">Apri attivit&agrave;</a>
+        </article>
+      </div>
+
+      <nav class="return-nav" aria-label="Navigazione di ritorno">
+        <a class="button-link" href="../index.html">Torna alla home</a>
+      </nav>
+    </section>
   </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Amalia Bonanno &middot; Applicazioni didattiche di Scienze &middot; A.S. 2025/2026</p>
+    </div>
+  </footer>
 </body>
 </html>

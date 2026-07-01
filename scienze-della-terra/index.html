@@ -3,44 +3,77 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Scienze della Terra | Applicazioni didattiche di Scienze</title>
-
   <link rel="stylesheet" href="../style.css">
 </head>
-
 <body>
-  <header>
-    <h1>Scienze della Terra</h1>
-    <p>
-      Applicazioni interattive per lo studio dei fenomeni geologici,
-      della struttura terrestre e delle risorse del pianeta.
-    </p>
+  <header class="site-header category-header">
+    <div class="container header-content">
+      <nav class="breadcrumb" aria-label="Percorso">
+        <a href="../index.html">Home</a>
+        <span aria-hidden="true">/</span>
+        <span>Scienze della Terra</span>
+      </nav>
+      <p class="eyebrow">Applicazioni didattiche di Scienze</p>
+      <h1>Scienze della Terra</h1>
+      <p class="lead">
+        Applicazioni dedicate al campo magnetico terrestre, alle rocce, ai minerali e alla sismicit&agrave; italiana.
+      </p>
+      <p class="category-meta">3 attivit&agrave; disponibili</p>
+    </div>
   </header>
 
   <main>
-    <h2>Attività disponibili</h2>
-    <p><ul>
-  <li>
-    <a href="dinamo-autoeccitante/">
-      Dinamo autoeccitante
-    </a>
-  </li>
-  <li>
-    <a href="rocce-e-minerali/">
-      Rocce e minerali
-    </a>
-  </li>
-  <li>
-    <a href="terremoti-italia-2024/">
-      Terremoti in Italia 2024
-    </a>
-  </li>
-</ul></p>
+    <section class="container section" aria-labelledby="activities-title">
+      <div class="section-heading">
+        <h2 id="activities-title">Attivit&agrave; disponibili</h2>
+      </div>
 
-    <p>
-      <a href="../index.html">Torna alla pagina principale</a>
-    </p>
+      <div class="activity-grid">
+        <article class="card card--indigo">
+          <div class="card-body">
+            <span class="badge">Applicazione interattiva</span>
+            <h3>Dinamo autoeccitante</h3>
+            <p>
+              Applicazione per comprendere il funzionamento della dinamo e la generazione del campo magnetico.
+            </p>
+          </div>
+          <a class="button-link" href="dinamo-autoeccitante/index.html">Apri attivit&agrave;</a>
+        </article>
+
+        <article class="card card--indigo">
+          <div class="card-body">
+            <span class="badge">Applicazione interattiva</span>
+            <h3>Rocce e minerali</h3>
+            <p>
+              Applicazione per riconoscere minerali, classificare le rocce e comprendere il ciclo litogenetico.
+            </p>
+          </div>
+          <a class="button-link" href="rocce-e-minerali/index.html">Apri attivit&agrave;</a>
+        </article>
+
+        <article class="card card--indigo">
+          <div class="card-body">
+            <span class="badge">Applicazione interattiva</span>
+            <h3>Terremoti in Italia nel 2024</h3>
+            <p>
+              Applicazione per analizzare la distribuzione, la magnitudo e la profondit&agrave; degli eventi sismici italiani.
+            </p>
+          </div>
+          <a class="button-link" href="terremoti-italia-2024/index.html">Apri attivit&agrave;</a>
+        </article>
+      </div>
+
+      <nav class="return-nav" aria-label="Navigazione di ritorno">
+        <a class="button-link" href="../index.html">Torna alla home</a>
+      </nav>
+    </section>
   </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Amalia Bonanno &middot; Applicazioni didattiche di Scienze &middot; A.S. 2025/2026</p>
+    </div>
+  </footer>
 </body>
 </html>

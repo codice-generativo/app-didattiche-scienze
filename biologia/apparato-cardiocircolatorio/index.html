@@ -3,62 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <meta
-    name="description"
-    content="Applicazione didattica interattiva dedicata all’apparato cardiocircolatorio."
-  >
-
+  <meta name="description" content="Applicazione interattiva per approfondire la struttura e il funzionamento dell'apparato cardiocircolatorio.">
   <title>Apparato cardiocircolatorio | Biologia</title>
-
   <link rel="stylesheet" href="../../style.css">
 </head>
-
 <body>
-  <header>
-    <p>
-      <a href="../index.html">Biologia</a>
-      <span aria-hidden="true"> / </span>
-      Apparato cardiocircolatorio
-    </p>
-
-    <h1>Apparato cardiocircolatorio</h1>
-
-    <p>
-      Applicazione interattiva per approfondire la struttura e il funzionamento
-      dell’apparato cardiocircolatorio.
-    </p>
+  <header class="site-header activity-header">
+    <div class="container header-content">
+      <nav class="breadcrumb" aria-label="Percorso">
+        <a href="../../index.html">Home</a>
+        <span aria-hidden="true">/</span>
+        <a href="../index.html">Biologia</a>
+        <span aria-hidden="true">/</span>
+        <span>Apparato cardiocircolatorio</span>
+      </nav>
+      <p class="eyebrow">Applicazioni didattiche di Scienze</p>
+      <h1>Apparato cardiocircolatorio</h1>
+      <p class="lead">
+        Applicazione interattiva per approfondire la struttura e il funzionamento dell&rsquo;apparato cardiocircolatorio.
+      </p>
+      <p class="category-meta">Applicazione interattiva</p>
+    </div>
   </header>
 
   <main>
-    <section>
-      <h2>Avvia l’applicazione</h2>
+    <section class="container section card--teal" aria-labelledby="actions-title">
+      <div class="activity-layout">
+        <div class="activity-panel">
+          <h2 id="actions-title">Cosa puoi fare</h2>
+          <ul class="action-list">
+            <li>Riconoscere i principali componenti dell&rsquo;apparato.</li>
+            <li>Comprendere il ruolo del cuore e dei vasi sanguigni.</li>
+            <li>Collegare strutture e funzioni.</li>
+          </ul>
+        </div>
 
-      <p>
-        Esplora i principali componenti dell’apparato cardiocircolatorio
-        e le loro funzioni.
-      </p>
+        <aside class="activity-panel" aria-label="Avvio dell'applicazione">
+          <span class="badge">Applicazione interattiva</span>
+          <a class="button-link primary-action" href="apparato_cardiocircolatorio.html" target="_blank" rel="noopener noreferrer">
+            Avvia l&rsquo;applicazione
+          </a>
+        </aside>
+      </div>
 
-      <p>
-        <a
-          href="apparato_cardiocircolatorio.html"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Apri Apparato cardiocircolatorio
-        </a>
-      </p>
+      <section class="source-section" aria-labelledby="note-title">
+        <h2 id="note-title">Nota</h2>
+        <p>
+          Applicazione originale sviluppata mediante un approccio di vibe coding, con supervisione, verifica e revisione
+          dei contenuti da parte dell&rsquo;autrice.
+        </p>
+      </section>
+
+      <nav class="return-nav" aria-label="Navigazione di ritorno">
+        <a class="button-link" href="../index.html">Torna a Biologia</a>
+        <a class="button-link" href="../../index.html">Torna alla home</a>
+      </nav>
     </section>
-
-    <nav aria-label="Navigazione">
-      <p>
-        <a href="../index.html">Torna a Biologia</a>
-      </p>
-
-      <p>
-        <a href="../../index.html">Torna alla pagina principale</a>
-      </p>
-    </nav>
   </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Amalia Bonanno &middot; Applicazioni didattiche di Scienze &middot; A.S. 2025/2026</p>
+    </div>
+  </footer>
 </body>
 </html>
